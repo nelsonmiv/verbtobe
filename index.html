@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English A1 - To Be & Present Continuous</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        accentBlue: '#3b82f6',
+                        accentGreen: '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="max-w-6xl mx-auto px-4 py-6 pb-24">
+        
+        <!-- HEADER -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-emerald-400 bg-clip-text text-transparent">
+                    English A1 Master
+                </h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Practica el Verbo To Be y el Present Continuous con Inteligencia Artificial</p>
+            </div>
+            
+            <!-- CONTROLES GLOBALES -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Configuración Gemini API -->
+                <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                    <span>Gemini TTS</span>
+                    <span id="gemini-badge" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                </button>
+
+                <!-- Guardado en la nube / Local info -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold">
+                    <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                    <span>Guardado: Auto Local</span>
+                </div>
+
+                <!-- Botón Modo Oscuro -->
+                <button onclick="toggleDarkMode()" class="p-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg transition-all" aria-label="Cambiar modo de luz">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-yellow-400"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-700"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- PROGRESS BAR GENERAL -->
+        <section class="bg-white dark:bg-darkCard rounded-2xl p-5 mb-8 shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 class="text-md font-bold mb-3 flex items-center gap-2">
+                <i data-lucide="trophy" class="text-yellow-500 w-5 h-5"></i>
+                Tu Progreso General (A1)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">Sección 1: Afirmativas y Negativas</div>
+                    <div class="font-bold text-lg" id="prog-s1">0 / 50</div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div id="bar-s1" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">Sección 2: Shadowing de Voz</div>
+                    <div class="font-bold text-lg" id="prog-s2">0 / 50</div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div id="bar-s2" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">Sección 3: Reverse Questions</div>
+                    <div class="font-bold text-lg" id="prog-s3">0 / 50</div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div id="bar-s3" class="bg-purple-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                <span id="global-percentage">Progreso Total: 0%</span>
+                <button onclick="resetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Reiniciar Progreso
+                </button>
+            </div>
+        </section>
+
+        <!-- NAVEGACIÓN DE SECCIONES -->
+        <nav class="flex flex-wrap gap-2 mb-8 justify-center">
+            <button onclick="switchTab('tab1')" id="btn-tab1" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-blue-500 text-white">
+                <i data-lucide="check-square" class="w-4 h-4"></i>
+                1. Afirmativas / Negativas
+            </button>
+            <button onclick="switchTab('tab2')" id="btn-tab2" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <i data-lucide="mic" class="w-4 h-4"></i>
+                2. Shadowing Activo
+            </button>
+            <button onclick="switchTab('tab3')" id="btn-tab3" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                <i data-lucide="help-circle" class="w-4 h-4"></i>
+                3. Reverse Questions
+            </button>
+        </nav>
+
+        <!-- SECCIÓN DE TRABAJO -->
+        <main class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 dark:border-slate-800/80 min-h-[450px] relative">
+            
+            <!-- NAVEGADOR INTERNO DE EJERCICIOS (1 A 50) -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Preguntas</span>
+                    <select id="exercise-selector" onchange="jumpToExercise(this.value)" class="bg-slate-100 dark:bg-slate-800 text-sm font-semibold py-1.5 px-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <!-- Generado dinámicamente -->
+                    </select>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="prevExercise()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all" title="Anterior">
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <span id="current-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono font-bold">1 / 50</span>
+                    <button onclick="nextExercise()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all" title="Siguiente">
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DE LAS PESTAÑAS -->
+            
+            <!-- PESTAÑA 1: AFIRMATIVAS Y NEGATIVAS -->
+            <div id="tab1-content" class="tab-pane active-pane">
+                <div class="space-y-6">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                            Completa los Espacios / Gramática A1
+                        </span>
+                        <!-- INDICADOR DE TIPO (AFIRMATIVA / NEGATIVA) -->
+                        <span id="s1-type-badge" class="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <!-- Inyectado dinámicamente -->
+                        </span>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl md:text-2xl font-bold mt-2 text-slate-900 dark:text-white" id="s1-prompt">
+                            Cargando ejercicio...
+                        </h3>
+                        <p class="text-sm text-slate-500 mt-2" id="s1-translation">Traducción cargando...</p>
+                    </div>
+
+                    <!-- OPCIÓN DE ESCUCHAR ENUNCIADO -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="speakCurrentSentence()" class="flex items-center gap-2 px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-semibold transition-all">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i> Escuchar Frase Completa
+                        </button>
+                    </div>
+
+                    <!-- CAJA DE RESPUESTA / ENTRADA -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Escribe la palabra faltante u oración completa:</label>
+                            <span class="text-xs text-slate-400 italic">¡Se permite escribir toda la frase!</span>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="s1-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg text-slate-900 dark:text-white" placeholder="Ej: isn't / They aren't studying tonight" autocomplete="off">
+                            <button onclick="startListening('s1-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-blue-500 transition-all" title="Dictar respuesta">
+                                <i data-lucide="mic" id="mic-s1-input" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p id="dictation-status-s1-input" class="text-xs text-blue-500 hidden italic">Escuchando... Habla ahora.</p>
+                    </div>
+
+                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
+                    <div class="flex items-center gap-4 pt-2">
+                        <button id="s1-action-btn" onclick="checkSection1Answer()" class="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            <span>Verificar Respuesta</span>
+                        </button>
+                    </div>
+
+                    <!-- CAJA DE RETROALIMENTACIÓN -->
+                    <div id="s1-feedback" class="hidden rounded-2xl p-4 border transition-all">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 2: SHADOWING ACTIVO -->
+            <div id="tab2-content" class="tab-pane hidden">
+                <div class="space-y-6">
+                    <div>
+                        <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold">
+                            Análisis de Pronunciación y Práctica Auditiva
+                        </span>
+                        <h3 class="text-xl md:text-2xl font-bold mt-3 text-slate-900 dark:text-white" id="s2-prompt">
+                            Cargando frase...
+                        </h3>
+                        <p class="text-sm text-slate-500 mt-2" id="s2-translation">Traducción cargando...</p>
+                    </div>
+
+                    <!-- REPRODUCTORES Y GUÍA -->
+                    <div class="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-800/80 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Paso 1:</span>
+                                <span class="text-sm font-medium">Escucha el audio nativo</span>
+                            </div>
+                            <button onclick="speakShadowingSentence()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                                <i data-lucide="volume-2" class="w-4.5 h-4.5"></i> Escuchar Pronunciación
+                            </button>
+                        </div>
+                        <div class="border-t border-slate-100 dark:border-slate-800/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Paso 2:</span>
+                                <span class="text-sm font-medium">Graba tu voz imitando el ritmo</span>
+                            </div>
+                            <button onclick="startShadowingRecording()" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                                <i data-lucide="mic" id="mic-shadow" class="w-4.5 h-4.5"></i> <span id="btn-shadow-text">Grabar mi Voz</span>
+                            </button>
+                        </div>
+                        <p id="dictation-status-shadow" class="text-xs text-red-500 hidden italic text-center">Grabando tu voz... Di la frase en inglés fuerte y claro.</p>
+                    </div>
+
+                    <!-- ANÁLISIS COMPARATIVO -->
+                    <div id="shadowing-analysis-box" class="hidden bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 space-y-3">
+                        <h4 class="font-bold text-md flex items-center gap-2">
+                            <i data-lucide="activity" class="text-emerald-500"></i> Análisis Comparativo de Pronunciación
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white dark:bg-darkBg p-3 rounded-xl border border-slate-200/50 dark:border-slate-800">
+                                <span class="text-xs text-slate-400 font-bold block mb-1">Tu Audio Dictado:</span>
+                                <span class="text-md font-semibold font-mono" id="user-said-text">...</span>
+                            </div>
+                            <div class="bg-white dark:bg-darkBg p-3 rounded-xl border border-slate-200/50 dark:border-slate-800 flex flex-col justify-center">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400 font-bold block">Puntaje de Similitud:</span>
+                                    <span class="text-lg font-black text-emerald-500" id="pronunciation-score">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
+                                    <div id="score-bar" class="h-full bg-emerald-500 transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p id="pronunciation-feedback-text" class="text-sm mt-2 text-slate-600 dark:text-slate-300 italic"></p>
+                    </div>
+
+                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
+                    <div class="flex items-center gap-4">
+                        <button id="s2-action-btn" onclick="completeShadowing()" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Marcar como Completado</span>
+                        </button>
+                    </div>
+
+                    <div id="s2-feedback" class="hidden rounded-2xl p-4 border transition-all">
+                        <!-- Comentarios inmediatos -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA 3: REVERSE QUESTIONS -->
+            <div id="tab3-content" class="tab-pane hidden">
+                <div class="space-y-6">
+                    <div>
+                        <span class="px-3 py-1 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded-full text-xs font-semibold">
+                            Estructura Gramatical Invertida (Preguntas)
+                        </span>
+                        <div class="flex items-start gap-3 mt-3">
+                            <div>
+                                <h4 class="text-xs text-slate-400 font-bold uppercase">Respuesta dada:</h4>
+                                <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1" id="s3-prompt">
+                                    Cargando respuesta...
+                                </h3>
+                                <p class="text-sm text-slate-500 mt-2" id="s3-translation">Traducción cargando...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
+                        <span class="text-xs font-bold text-purple-500 block mb-1">Tu Reto Gramatical:</span>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">
+                            Escribe o dicta la <strong>pregunta en inglés</strong> correcta para la respuesta mostrada arriba. Recuerda el orden de palabras para preguntas con <em>To Be</em> o <em>Present Continuous</em>.
+                        </p>
+                    </div>
+
+                    <!-- CAJA DE RESPUESTA / ENTRADA -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Tu pregunta formulada:</label>
+                        <div class="relative">
+                            <input type="text" id="s3-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-lg text-slate-900 dark:text-white animate-pulse-once" placeholder="Ej: Are you studying english? / Is he running?" autocomplete="off">
+                            <button onclick="startListening('s3-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-purple-500 transition-all" title="Dictar respuesta">
+                                <i data-lucide="mic" id="mic-s3-input" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p id="dictation-status-s3-input" class="text-xs text-purple-500 hidden italic">Escuchando... Habla ahora.</p>
+                    </div>
+
+                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
+                    <div class="flex items-center gap-4 pt-2">
+                        <button id="s3-action-btn" onclick="checkSection3Answer()" class="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            <span>Verificar Pregunta</span>
+                        </button>
+                    </div>
+
+                    <!-- CAJA DE RETROALIMENTACIÓN -->
+                    <div id="s3-feedback" class="hidden rounded-2xl p-4 border transition-all">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER NAV / FOOTNOTE -->
+        <footer class="mt-8 text-center text-xs text-slate-400 space-y-2">
+            <p>Hecho con pasión para estudiantes de nivel A1 de inglés.</p>
+            <p>Utiliza navegadores modernos como Google Chrome, Microsoft Edge o Safari para una experiencia completa de reconocimiento y síntesis de voz.</p>
+        </footer>
+    </div>
+
+    <!-- MODAL DE CONFIGURACIÓN GEMINI API (CON SINTESIS DE VOZ PROPIA) -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-purple-500"></i>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Configurar Gemini TTS</h3>
+                </div>
+                <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Al añadir tu API Key de Gemini, la aplicación utilizará la voz de alta calidad <strong>Gemini TTS (modelo gemini-2.5-flash-preview-tts)</strong> en lugar de las voces estándar del sistema operativo.
+            </p>
+
+            <div class="space-y-2">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-bold uppercase text-slate-400">Gemini API Key</label>
+                    <!-- ACCESO DIRECTO DE OBTENCIÓN DE API KEY -->
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-500 dark:text-purple-400 hover:text-purple-400 dark:hover:text-purple-300 font-semibold flex items-center gap-1 hover:underline">
+                        <span>Obtener mi API Key</span>
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+                <input type="password" id="gemini-key-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-slate-900 dark:text-white" placeholder="AIzaSy...">
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
+                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white">
+                    <option value="Kore">Kore (Voz Clara Estándar)</option>
+                    <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
+                    <option value="Charon">Charon (Tono Profundo)</option>
+                    <option value="Leda">Leda (Femenino Suave)</option>
+                    <option value="Puck">Puck (Juvenil)</option>
+                </select>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="saveGeminiSettings()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all shadow-md">
+                    Guardar Configuración
+                </button>
+                <button onclick="clearGeminiSettings()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm transition-all">
+                    Borrar Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIÓN FLOTANTE -->
+    <div id="toast-notif" class="fixed bottom-6 right-6 bg-slate-900 dark:bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-sm">
+        <i data-lucide="info" class="w-5 h-5 text-blue-400" id="toast-icon"></i>
+        <span id="toast-text">Notificación de ejemplo</span>
+    </div>
+
+    <!-- SCRIPTS DE DATOS (50 Ejercicios por Sección) -->
+    <script>
+        // Sección 1: Ejercicios de Afirmativo y Negativo (To Be y Present Continuous)
+        const s1Exercises = [
+            { id: 1, prompt: "I ___ a student.", translation: "Yo soy un estudiante.", solution: "am", context: "Usamos 'am' con el pronombre 'I' en presente.", type: "Afirmativa" },
+            { id: 2, prompt: "She ___ playing soccer right now.", translation: "Ella está jugando fútbol ahora mismo.", solution: "is", context: "Present Continuous: 'She is' + verbo con -ing.", type: "Afirmativa" },
+            { id: 3, prompt: "They ___ studying tonight.", translation: "Ellos no están estudiando esta noche.", solution: "aren't", context: "Present Continuous Negativo (con contracción): 'They aren't studying'.", type: "Negativa" },
+            { id: 4, prompt: "We ___ happy today.", translation: "Nosotros estamos felices hoy.", solution: "are", context: "Usamos 'are' con el pronombre 'We'.", type: "Afirmativa" },
+            { id: 5, prompt: "He ___ eating an apple.", translation: "Él está comiendo una manzana.", solution: "is", context: "Present Continuous: 'He is' + eating.", type: "Afirmativa" },
+            { id: 6, prompt: "It ___ a very nice dog.", translation: "Es un perro muy lindo.", solution: "is", context: "Usamos 'is' para el pronombre singular impersonal 'It'.", type: "Afirmativa" },
+            { id: 7, prompt: "You ___ my best friend.", translation: "Tú eres mi mejor amigo.", solution: "are", context: "Usamos 'are' con 'You'.", type: "Afirmativa" },
+            { id: 8, prompt: "The sun ___ shining beautifully.", translation: "El sol está brillando hermosamente.", solution: "is", context: "El sol (it) es singular, por lo tanto usamos 'is'.", type: "Afirmativa" },
+            { id: 9, prompt: "I ___ listening to music.", translation: "Yo no estoy escuchando música.", solution: "am not", context: "Negativo de To Be: Para 'I', la única contracción posible es combinándolo con el pronombre (I'm not), por lo que en el espacio en blanco se responde 'am not'.", type: "Negativa" },
+            { id: 10, prompt: "Cats ___ sleeping on the bed.", translation: "Los gatos están durmiendo en la cama.", solution: "are", context: "Plural (Cats = They), por ende usamos 'are'.", type: "Afirmativa" },
+            { id: 11, prompt: "She ___ studying English, she is resting.", translation: "Ella no está estudiando inglés, está descansando.", solution: "isn't", context: "Sección negativa (con contracción): 'isn't' para el sujeto singular 'she'.", type: "Negativa" },
+            { id: 12, prompt: "We ___ learning a lot in this class.", translation: "Nosotros estamos aprendiendo mucho en esta clase.", solution: "are", context: "Present Continuous para 'We': usamos 'are'.", type: "Afirmativa" },
+            { id: 13, prompt: "The train ___ arriving now.", translation: "El tren está llegando ahora.", solution: "is", context: "El tren (it) es singular, se usa 'is' para continuous.", type: "Afirmativa" },
+            { id: 14, prompt: "You ___ doing a great job.", translation: "Tú estás haciendo un gran trabajo.", solution: "are", context: "Present Continuous para 'You' requiere el auxiliar 'are'.", type: "Afirmativa" },
+            { id: 15, prompt: "I ___ wearing a warm jacket.", translation: "Estoy usando una chaqueta abrigada.", solution: "am", context: "Present Continuous: 'I am wearing'.", type: "Afirmativa" },
+            { id: 16, prompt: "My parents ___ working today.", translation: "Mis parents están trabajando hoy.", solution: "are", context: "Mis padres (They) son plurales, usamos 'are'.", type: "Afirmativa" },
+            { id: 17, prompt: "The baby ___ crying, she is hungry.", translation: "El bebé está llorando, tiene hambre.", solution: "is", context: "El bebé (singular), usamos 'is'.", type: "Afirmativa" },
+            { id: 18, prompt: "It ___ raining outside.", translation: "Está lloviendo afuera.", solution: "is", context: "Clima/Tiempo 'It is raining'.", type: "Afirmativa" },
+            { id: 19, prompt: "My room ___ clean.", translation: "Mi cuarto está limpio.", solution: "is", context: "El cuarto (it) es singular, requiere 'is'.", type: "Afirmativa" },
+            { id: 20, prompt: "You ___ paying attention.", translation: "No estás prestando atención.", solution: "aren't", context: "Negación para 'you' (con contracción): 'you aren't'.", type: "Negativa" },
+            { id: 21, prompt: "They ___ playing video games.", translation: "Ellos están jugando videojuegos.", solution: "are", context: "Para 'They' usamos 'are' en Present Continuous.", type: "Afirmativa" },
+            { id: 22, prompt: "The teacher ___ explaining the grammar.", translation: "El profesor está explicando la gramática.", solution: "is", context: "El profesor (He/She) es singular, requiere 'is'.", type: "Afirmativa" },
+            { id: 23, prompt: "We ___ watching TV, we are reading.", translation: "No estamos viendo televisión, estamos leyendo.", solution: "aren't", context: "Negación en plural (con contracción): 'we aren't'.", type: "Negativa" },
+            { id: 24, prompt: "I ___ very tired tonight.", translation: "Estoy muy cansado esta noche.", solution: "am", context: "Sentimiento/Estado con 'I': usamos 'am'.", type: "Afirmativa" },
+            { id: 25, prompt: "He ___ running in the park.", translation: "Él está corriendo en el parque.", solution: "is", context: "Acción en progreso para 'He': 'is running'.", type: "Afirmativa" },
+            { id: 26, prompt: "The birds ___ flying south.", translation: "Los pájaros están volando al sur.", solution: "are", context: "Pájaros (They) son plurales, usamos 'are'.", type: "Afirmativa" },
+            { id: 27, prompt: "This soup ___ delicious.", translation: "Esta sopa está deliciosa.", solution: "is", context: "Sopa (singular), usamos el verbo 'is'.", type: "Afirmativa" },
+            { id: 28, prompt: "You ___ my favorite student.", translation: "Tú eres mi estudiante favorito.", solution: "are", context: "Verbo to be para 'You' es 'are'.", type: "Afirmativa" },
+            { id: 29, prompt: "They ___ at home today.", translation: "Ellos no están en casa hoy.", solution: "aren't", context: "Negativo de ubicación para 'They' (con contracción): 'They aren't'.", type: "Negativa" },
+            { id: 30, prompt: "I ___ writing a novel.", translation: "Estoy escribiendo una novela.", solution: "am", context: "Acción en progreso con 'I': 'am writing'.", type: "Afirmativa" },
+            { id: 31, prompt: "She ___ wearing a red dress.", translation: "Ella está usando un vestido rojo.", solution: "is", context: "Uso de 'is' para tercera persona singular en Present Continuous.", type: "Afirmativa" },
+            { id: 32, prompt: "We ___ buying some fresh bread.", translation: "Estamos comprando algo de pan fresco.", solution: "are", context: "Present Continuous para 'We': requiere 'are'.", type: "Afirmativa" },
+            { id: 33, prompt: "The computer ___ working fine now.", translation: "La computadora está funcionando bien ahora.", solution: "is", context: "La computadora (it), requiere 'is'.", type: "Afirmativa" },
+            { id: 34, prompt: "It ___ hot today, it is windy.", translation: "No está caluroso hoy, está ventoso.", solution: "isn't", context: "Clima en negativo con contracción: 'it isn't'.", type: "Negativa" },
+            { id: 35, prompt: "The keys ___ on the kitchen table.", translation: "Las llaves están sobre la mesa de la cocina.", solution: "are", context: "Las llaves (Plural) requiere 'are'.", type: "Afirmativa" },
+            { id: 36, prompt: "My brother ___ riding his bicycle.", translation: "Mi hermano está montando su bicicleta.", solution: "is", context: "Hermano (He) requiere el auxiliar 'is'.", type: "Afirmativa" },
+            { id: 37, prompt: "I ___ making dinner, I ordered pizza.", translation: "No estoy haciendo la cena, pedí pizza.", solution: "am not", context: "Negación para primera persona singular: 'I am not'.", type: "Negativa" },
+            { id: 38, prompt: "You and I ___ studying together.", translation: "Tú y yo estamos estudiando juntos.", solution: "are", context: "Tú y yo equivale a 'We' (Nosotros), usamos 'are'.", type: "Afirmativa" },
+            { id: 39, prompt: "They ___ cooking delicious pasta.", translation: "Ellos están cocinando pasta de forma deliciosa.", solution: "are", context: "Sujeto 'They' utiliza 'are'.", type: "Afirmativa" },
+            { id: 40, prompt: "The dog ___ barking at the cat.", translation: "El perro está ladrándole al gato.", solution: "is", context: "Perro (singular) requiere 'is' para continuous.", type: "Afirmativa" },
+            { id: 41, prompt: "We ___ going to the beach.", translation: "Nosotros no vamos a ir a la playa.", solution: "aren't", context: "Negativo con contracción de Present Continuous para 'We': 'we aren't going'.", type: "Negativa" },
+            { id: 42, prompt: "She ___ an excellent doctor.", translation: "Ella es una excelente doctora.", solution: "is", context: "Profesión con To Be para 'She': usamos 'is'.", type: "Afirmativa" },
+            { id: 43, prompt: "I ___ drinking fresh water.", translation: "Estoy bebiendo agua fresca.", solution: "am", context: "Acción en progreso con 'I': 'am drinking'.", type: "Afirmativa" },
+            { id: 44, prompt: "My friends ___ traveling to Rome.", translation: "Mis amigos están viajando a Roma.", solution: "are", context: "Sujeto plural requiere 'are' en Present Continuous.", type: "Afirmativa" },
+            { id: 45, prompt: "This book ___ very interesting.", translation: "Este libro está muy interesante.", solution: "is", context: "Libro (it) requiere 'is'.", type: "Afirmativa" },
+            { id: 46, prompt: "The window ___ open.", translation: "La ventana está abierta.", solution: "is", context: "Ventana (singular), usamos 'is'.", type: "Afirmativa" },
+            { id: 47, prompt: "You ___ always helping everyone.", translation: "Tú siempre estás ayudando a todos.", solution: "are", context: "Uso de 'are' con el pronombre 'You'.", type: "Afirmativa" },
+            { id: 48, prompt: "It ___ snowing in Florida.", translation: "No está nevando en Florida.", solution: "isn't", context: "Negativo con contracción de clima: 'it isn't snowing'.", type: "Negativa" },
+            { id: 49, prompt: "The children ___ playing in the garden.", translation: "Los niños están jugando en el jardín.", solution: "are", context: "Niños (plural) requiere 'are'.", type: "Afirmativa" },
+            { id: 50, prompt: "I ___ ready for the challenge.", translation: "Estoy listo para el desafío.", solution: "am", context: "Adjetivo con primera persona: 'I am ready'.", type: "Afirmativa" }
+        ];
+
+        // Sección 2: Ejercicios de Shadowing (Frases completas para escuchar y repetir)
+        const s2Exercises = [
+            { id: 1, text: "I am a happy student.", translation: "Yo soy un estudiante feliz." },
+            { id: 2, text: "She is learning English now.", translation: "Ella está aprendiendo inglés ahora." },
+            { id: 3, text: "They are playing in the park.", translation: "Ellos están jugando en el parque." },
+            { id: 4, text: "He is drinking a cup of coffee.", translation: "Él está bebiendo una taza de café." },
+            { id: 5, text: "We are waiting for the school bus.", translation: "Estamos esperando el autobús escolar." },
+            { id: 6, text: "It is raining very hard today.", translation: "Está lloviendo muy fuerte hoy." },
+            { id: 7, text: "You are doing a fantastic job.", translation: "Estás haciendo un trabajo fantástico." },
+            { id: 8, text: "I am not watching a movie.", translation: "No estoy viendo una película." },
+            { id: 9, text: "The cat is sleeping on my bed.", translation: "El gato está durmiendo en mi cama." },
+            { id: 10, text: "My parents are working right now.", translation: "Mis parents are working right now." },
+            { id: 11, text: "She is not feeling very well.", translation: "Ella no se está sintiendo muy bien." },
+            { id: 12, text: "We are cooking delicious pasta.", translation: "Estamos cocinando pasta de forma deiciosa." },
+            { id: 13, text: "The train is arriving at the station.", translation: "El tren está llegando a la estación." },
+            { id: 14, text: "They are not studying tonight.", translation: "Ellos no están estudiando esta noche." },
+            { id: 15, text: "I am wearing a blue sweater.", translation: "Estoy usando un suéter azul." },
+            { id: 16, text: "He is talking to his sister.", translation: "Él está hablando con su hermana." },
+            { id: 17, text: "The sun is shining in the sky.", translation: "El sol está brillando en el cielo." },
+            { id: 18, text: "You are not driving the car.", translation: "Tú no estás conduciendo el auto." },
+            { id: 19, text: "It is a beautiful afternoon.", translation: "Es una tarde hermosa." },
+            { id: 20, text: "The children are playing outside.", translation: "Los niños están jugando afuera." },
+            { id: 21, text: "I am eating a fresh red apple.", translation: "Estoy comiendo una manzana roja fresca." },
+            { id: 22, text: "She is writing a letter to her friend.", translation: "Ella está escribiendo una carta a su amiga." },
+            { id: 23, text: "We are listening to the music.", translation: "Estamos escuchando la música." },
+            { id: 24, text: "He is running very fast.", translation: "Él está corriendo muy rápido." },
+            { id: 25, text: "They are visiting the museum.", translation: "Ellos están visitando el museo." },
+            { id: 26, text: "The bird is singing on the tree.", translation: "El pájaro está cantando en el árbol." },
+            { id: 27, text: "I am not busy right now.", translation: "No estoy ocupado ahora mismo." },
+            { id: 28, text: "You are walking in the garden.", translation: "Estás caminando en el jardín." },
+            { id: 29, text: "The water is very cold today.", translation: "El agua está muy fría hoy." },
+            { id: 30, text: "We are having lunch at a restaurant.", translation: "Estamos almorzando en un restaurante." },
+            { id: 31, text: "She is buying a new dress.", translation: "Ella está comprando un vestido nuevo." },
+            { id: 32, text: "My dog is running after a ball.", translation: "Mi perro está corriendo tras una pelota." },
+            { id: 33, text: "They are not eating fast food.", translation: "Ellos no están comiendo comida rápida." },
+            { id: 34, text: "I am cleaning my room now.", translation: "Estoy limpiando mi habitación ahora." },
+            { id: 35, text: "He is painting a picture.", translation: "Él está pintando un cuadro." },
+            { id: 36, text: "The computer is working perfectly.", translation: "La computadora está funcionando perfectamente." },
+            { id: 37, text: "You are speaking English well.", translation: "Estás hablando inglés muy bien." },
+            { id: 38, text: "We are not watching the game.", translation: "Nosotros no estamos viendo el partido." },
+            { id: 39, text: "She is laughing at the joke.", translation: "Ella se está riendo del chiste." },
+            { id: 40, text: "It is getting dark outside.", translation: "Se está haciendo oscuro afuera." },
+            { id: 41, text: "The baby is sleeping peacefully.", translation: "El bebé está durmiendo pacíficamente." },
+            { id: 42, text: "I am taking a small break.", translation: "Me estoy tomando un pequeño descanso." },
+            { id: 43, text: "They are studying for the test.", translation: "Ellos están estudiando para el examen." },
+            { id: 44, text: "He is not wearing his glasses.", translation: "Él no está usando sus lentes." },
+            { id: 45, text: "We are building a sandcastle.", translation: "Estamos construyendo un castillo de arena." },
+            { id: 46, text: "The flowers are opening in spring.", translation: "Las flores se están abriendo en primavera." },
+            { id: 47, text: "You are learning very quickly.", translation: "Estás haciendo progresos muy rápidos." },
+            { id: 48, text: "It is not snowing this morning.", translation: "No está nevando esta mañana." },
+            { id: 49, text: "I am opening the main door.", translation: "Estoy abriendo la puerta principal." },
+            { id: 50, text: "They are celebrating a birthday.", translation: "Ellos están celebrando un cumpleaños." }
+        ];
+
+        // Sección 3: Reverse Questions (Dar una respuesta y el estudiante debe construir la pregunta correcta)
+        const s3Exercises = [
+            { id: 1, prompt: "Yes, I am a doctor.", translation: "Sí, soy doctor.", solution: "Are you a doctor?", context: "Pregunta simple de sí/no con To Be para 'You'." },
+            { id: 2, prompt: "No, they are not studying.", translation: "No, ellos no están estudiando.", solution: "Are they studying?", context: "Pregunta en Present Continuous invertida: Are + They + studying?" },
+            { id: 3, prompt: "She is thirty years old.", translation: "Ella tiene 30 años.", solution: "How old is she?", context: "Pregunta por edad con To Be." },
+            { id: 4, prompt: "Yes, it is raining.", translation: "Sí, está lloviendo.", solution: "Is it raining?", context: "Pregunta invertida para el clima en Present Continuous." },
+            { id: 5, prompt: "He is running in the park.", translation: "Él está corriendo en el parque.", solution: "Where is he running?", context: "Pregunta con Wh- Word: Where + is + he + running?" },
+            { id: 6, prompt: "No, we are not lost.", translation: "No, no estamos perdidos.", solution: "Are you lost?", context: "Para responder 'we', la pregunta típicamente se hace a 'you' (plural)." },
+            { id: 7, prompt: "They are playing video games.", translation: "Ellos están jugando videojuegos.", solution: "What are they playing?", context: "Pregunta sobre el objeto de la acción." },
+            { id: 8, prompt: "Yes, I am hungry.", translation: "Sí, tengo hambre.", solution: "Are you hungry?", context: "Pregunta directa de estado con 'you'." },
+            { id: 9, prompt: "She is crying because she is sad.", translation: "Ella está llorando porque está triste.", solution: "Why is she crying?", context: "Pregunta por motivo: Why + is + she + crying?" },
+            { id: 10, prompt: "The cat is on the sofa.", translation: "El gato está sobre el sofá.", solution: "Where is the cat?", context: "Pregunta por localización del gato." },
+            { id: 11, prompt: "No, he is not a teacher.", translation: "No, él no es profesor.", solution: "Is he a teacher?", context: "Inversión de To Be para 'He'." },
+            { id: 12, prompt: "We are learning English.", translation: "Estamos aprendiendo inglés.", solution: "What are you learning?", context: "Pregunta de Present Continuous con Wh- Word." },
+            { id: 13, prompt: "My keys are in my bag.", translation: "Mis llaves están en mi bolso.", solution: "Where are your keys?", context: "Localización de objetos en plural." },
+            { id: 14, prompt: "Yes, he is listening to you.", translation: "Sí, te está escuchando.", solution: "Is he listening to me?", context: "Pregunta de confirmación." },
+            { id: 15, prompt: "They are from Spain.", translation: "Ellos son de España.", solution: "Where are they from?", context: "Pregunta clásica de origen A1." },
+            { id: 16, prompt: "Yes, I am eating lunch.", translation: "Sí, estoy almorzando.", solution: "Are you eating lunch?", context: "Conversión de 'I am' a 'Are you' para preguntar." },
+            { id: 17, prompt: "She is cooking pasta.", translation: "Ella está cocinando pasta.", solution: "What is she cooking?", context: "Pregunta por el objeto que cocina." },
+            { id: 18, prompt: "No, the dog is not aggressive.", translation: "No, el perro no es agresivo.", solution: "Is the dog aggressive?", context: "Sujeto singular 'dog' requiere 'Is' adelante." },
+            { id: 19, prompt: "They are going to the cinema.", translation: "Ellos van al cine.", solution: "Where are they going?", context: "Pregunta de dirección o destino." },
+            { id: 20, prompt: "Yes, we are happy.", translation: "Sí, somos felices.", solution: "Are you happy?", context: "Pregunta plural con To Be." },
+            { id: 21, prompt: "He is doing his homework.", translation: "Él está haciendo su tarea.", solution: "What is he doing?", context: "Pregunta clásica sobre acción en progreso." },
+            { id: 22, prompt: "The book is under the table.", translation: "El libro está debajo de la mesa.", solution: "Where is the book?", context: "Localización de un objeto singular." },
+            { id: 23, prompt: "No, she is not driving.", translation: "No, ella no está conduciendo.", solution: "Is she driving?", context: "Estructura de pregunta de sí/no." },
+            { id: 24, prompt: "I am fine, thank you.", translation: "Estoy bien, gracias.", solution: "How are you?", context: "Saludo estándar de nivel A1." },
+            { id: 25, prompt: "They are shouting because they are angry.", translation: "Están gritando porque están enojados.", solution: "Why are they shouting?", context: "Pregunta de causa en plural." },
+            { id: 26, prompt: "Yes, I am wearing a coat.", translation: "Sí, estoy usando un abrigo.", solution: "Are you wearing a coat?", context: "Inversión para preguntar sobre vestimenta." },
+            { id: 27, prompt: "She is a beautiful baby.", translation: "Es una bebé hermosa.", solution: "Is she a beautiful baby?", context: "To Be interrogativo con adjetivo y sustantivo." },
+            { id: 28, prompt: "We are studying for the exam.", translation: "Estamos estudiando para el examen.", solution: "Why are you studying?", context: "Pregunta de propósito." },
+            { id: 29, prompt: "No, the shop is not open.", translation: "No, la tienda no está abierta.", solution: "Is the shop open?", context: "Pregunta sobre el estado de un establecimiento." },
+            { id: 30, prompt: "He is visiting his grandmother.", translation: "Él está visitando a su abuela.", solution: "Who is he visiting?", context: "Pregunta por persona con 'Who'." },
+            { id: 31, prompt: "The train is arriving at 9 PM.", translation: "El tren llegará a las 9 PM.", solution: "What time is the train arriving?", context: "Pregunta sobre tiempo de llegada." },
+            { id: 32, prompt: "Yes, they are best friends.", translation: "Sí, son mejores amigos.", solution: "Are they best friends?", context: "Pregunta de relación personal." },
+            { id: 33, prompt: "No, I am not tired.", translation: "No, no estoy cansado.", solution: "Are you tired?", context: "Pregunta básica de estado físico." },
+            { id: 34, prompt: "She is in her office.", translation: "Ella está en su oficina.", solution: "Where is she?", context: "Pregunta simple de ubicación." },
+            { id: 35, prompt: "They are reading a comic book.", translation: "Ellos están leyendo una historieta.", solution: "What are they reading?", context: "Pregunta de lectura actual." },
+            { id: 36, prompt: "No, it is not snowing.", translation: "No, no está nevando.", solution: "Is it snowing?", context: "Pregunta de clima." },
+            { id: 37, prompt: "He is buying a new laptop.", translation: "Él está comprando una nueva laptop.", solution: "What is he buying?", context: "Pregunta sobre compra." },
+            { id: 38, prompt: "My phone number is 12345.", translation: "Mi número de teléfono es 12345.", solution: "What is your phone number?", context: "Información personal básica." },
+            { id: 39, prompt: "Yes, we are leaving now.", translation: "Sí, nos vamos ahora.", solution: "Are you leaving now?", context: "Salida inminente." },
+            { id: 40, prompt: "They are at the stadium.", translation: "Ellos están en el estadio.", solution: "Where are they?", context: "Ubicación en plural." },
+            { id: 41, prompt: "She is crying for her toy.", translation: "Ella está llorando por su juguete.", solution: "Why is she crying?", context: "Pregunta por llanto." },
+            { id: 42, prompt: "Yes, I am speaking to you.", translation: "Sí, te estoy hablando a ti.", solution: "Are you speaking to me?", context: "Inversión de pronombres." },
+            { id: 43, prompt: "He is wearing a blue shirt.", translation: "Él viste una camisa azul.", solution: "What color shirt is he wearing?", context: "Pregunta por color de vestimenta." },
+            { id: 44, prompt: "The museum is next to the bank.", translation: "El museo está al lado del banco.", solution: "Where is the museum?", context: "Localización con preposiciones." },
+            { id: 45, prompt: "No, they are not crying.", translation: "No, ellos no están llorando.", solution: "Are they crying?", context: "Confirmación de estado emocional en plural." },
+            { id: 46, prompt: "I am feeling fantastic.", translation: "Me estoy sintiendo fantástico.", solution: "How are you feeling?", context: "Pregunta por sentimiento físico." },
+            { id: 47, prompt: "Yes, the soup is hot.", translation: "Sí, la sopa está caliente.", solution: "Is the soup hot?", context: "Estado físico de comida." },
+            { id: 48, prompt: "They are running because they are late.", translation: "Están corriendo porque van tarde.", solution: "Why are they running?", context: "Pregunta de motivo de prisa." },
+            { id: 49, prompt: "She is looking at the birds.", translation: "Ella está mirando las aves.", solution: "What is she looking at?", context: "Pregunta de atención visual." },
+            { id: 50, prompt: "Yes, I am ready.", translation: "Sí, estoy listo.", solution: "Are you ready?", context: "Pregunta clásica de preparación." }
+        ];
+    </script>
+
+    <!-- MOTOR LÓGICO DE LA APP -->
+    <script>
+        // Variables de estado
+        let activeTab = 'tab1';
+        let currentS1Index = 0;
+        let currentS2Index = 0;
+        let currentS3Index = 0;
+
+        // Progreso guardado localmente
+        let progress = {
+            tab1: Array(50).fill(false),
+            tab2: Array(50).fill(false),
+            tab3: Array(50).fill(false)
+        };
+
+        // Caché en memoria para audios pre-generados de Gemini TTS (Clave: Texto, Valor: Base64 PCM16)
+        let audioCache = {};
+
+        // Credenciales Gemini API (Opcionales)
+        let geminiApiKey = '';
+        let preferredVoice = 'Kore';
+
+        // Reconocimiento de Voz nativo
+        let recognition;
+        let isRecording = false;
+
+        // Inicialización
+        window.onload = function() {
+            lucide.createIcons();
+            loadProgressFromStorage();
+            loadGeminiConfig();
+            updateProgressUI();
+            buildExerciseSelectors();
+            loadExerciseData();
+            initSpeechRecognition();
+        };
+
+        // Cambiar Modo de Luz / Oscuro
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Cargar progreso desde localStorage
+        function loadProgressFromStorage() {
+            const saved = localStorage.getItem('english_a1_progress');
+            if (saved) {
+                try {
+                    progress = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Error cargando progreso:", e);
+                }
+            }
+        }
+
+        // Guardar progreso en localStorage
+        function saveProgressToStorage() {
+            localStorage.setItem('english_a1_progress', JSON.stringify(progress));
+            updateProgressUI();
+        }
+
+        // Borrar Progreso
+        function resetAllProgress() {
+            if (confirm("¿Estás seguro de que quieres reiniciar todo tu progreso?")) {
+                progress = {
+                    tab1: Array(50).fill(false),
+                    tab2: Array(50).fill(false),
+                    tab3: Array(50).fill(false)
+                };
+                clearAudioCache();
+                saveProgressToStorage();
+                loadExerciseData();
+                showToast("Progreso reiniciado", "trash-2", "text-red-500");
+            }
+        }
+
+        // Vaciar la caché local de audios
+        function clearAudioCache() {
+            audioCache = {};
+        }
+
+        // Actualizar interfaz del Progreso
+        function updateProgressUI() {
+            const s1Count = progress.tab1.filter(Boolean).length;
+            const s2Count = progress.tab2.filter(Boolean).length;
+            const s3Count = progress.tab3.filter(Boolean).length;
+
+            document.getElementById('prog-s1').innerText = `${s1Count} / 50`;
+            document.getElementById('prog-s2').innerText = `${s2Count} / 50`;
+            document.getElementById('prog-s3').innerText = `${s3Count} / 50`;
+
+            const p1 = (s1Count / 50) * 100;
+            const p2 = (s2Count / 50) * 100;
+            const p3 = (s3Count / 50) * 100;
+
+            document.getElementById('bar-s1').style.width = `${p1}%`;
+            document.getElementById('bar-s2').style.width = `${p2}%`;
+            document.getElementById('bar-s3').style.width = `${p3}%`;
+
+            const totalCompleted = s1Count + s2Count + s3Count;
+            const totalPercentage = Math.round((totalCompleted / 150) * 100);
+            document.getElementById('global-percentage').innerText = `Progreso Total: ${totalPercentage}%`;
+        }
+
+        // Configuración de Gemini
+        function loadGeminiConfig() {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            const savedVoice = localStorage.getItem('gemini_voice');
+            
+            if (savedKey) {
+                geminiApiKey = savedKey;
+                document.getElementById('gemini-key-input').value = savedKey;
+                document.getElementById('gemini-badge').classList.remove('bg-red-500');
+                document.getElementById('gemini-badge').classList.add('bg-emerald-500');
+            }
+            if (savedVoice) {
+                preferredVoice = savedVoice;
+                document.getElementById('gemini-voice-select').value = savedVoice;
+            }
+        }
+
+        function toggleGeminiModal() {
+            const modal = document.getElementById('gemini-modal');
+            modal.classList.toggle('hidden');
+            // Asegurar que Lucide renderice los iconos nuevos al abrir el modal
+            if (!modal.classList.contains('hidden')) {
+                lucide.createIcons();
+            }
+        }
+
+        // Guardar API Key y preferencias de Gemini
+        function saveGeminiSettings() {
+            const key = document.getElementById('gemini-key-input').value.trim();
+            const voice = document.getElementById('gemini-voice-select').value;
+
+            // Limpiar caché previa de audio porque podría haber cambiado la voz o la key
+            clearAudioCache();
+
+            if (key) {
+                geminiApiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                document.getElementById('gemini-badge').classList.remove('bg-red-500');
+                document.getElementById('gemini-badge').classList.add('bg-emerald-500');
+                showToast("API Key de Gemini guardada", "sparkles", "text-purple-500");
+                
+                // Iniciar la precarga inmediatamente después de guardar la llave
+                triggerPrefetch();
+            }
+            
+            preferredVoice = voice;
+            localStorage.setItem('gemini_voice', voice);
+            toggleGeminiModal();
+        }
+
+        function clearGeminiSettings() {
+            geminiApiKey = '';
+            localStorage.removeItem('gemini_api_key');
+            document.getElementById('gemini-key-input').value = '';
+            document.getElementById('gemini-badge').classList.remove('bg-emerald-500');
+            document.getElementById('gemini-badge').classList.add('bg-red-500');
+            clearAudioCache();
+            showToast("API Key de Gemini eliminada.", "info", "text-blue-500");
+            toggleGeminiModal();
+        }
+
+        // Cambiar entre pestañas
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+            });
+
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (tabId === 'tab1') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-blue-500 text-white";
+            if (tabId === 'tab2') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-emerald-500 text-white";
+            if (tabId === 'tab3') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-purple-500 text-white";
+
+            buildExerciseSelectors();
+            loadExerciseData();
+        }
+
+        // Construir selectores de ejercicio (1-50)
+        function buildExerciseSelectors() {
+            const selector = document.getElementById('exercise-selector');
+            selector.innerHTML = '';
+            
+            let currentIdx = getActiveIndex();
+            let arr = activeTab === 'tab1' ? progress.tab1 : activeTab === 'tab2' ? progress.tab2 : progress.tab3;
+
+            for (let i = 0; i < 50; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                const completedSymbol = arr[i] ? '✓' : '✗';
+                opt.innerText = `Reto ${i + 1} [${completedSymbol}]`;
+                if (i === currentIdx) opt.selected = true;
+                selector.appendChild(opt);
+            }
+
+            document.getElementById('current-badge').innerText = `${currentIdx + 1} / 50`;
+        }
+
+        function getActiveIndex() {
+            if (activeTab === 'tab1') return currentS1Index;
+            if (activeTab === 'tab2') return currentS2Index;
+            return currentS3Index;
+        }
+
+        function setActiveIndex(val) {
+            if (activeTab === 'tab1') currentS1Index = val;
+            else if (activeTab === 'tab2') currentS2Index = val;
+            else currentS3Index = val;
+            buildExerciseSelectors();
+        }
+
+        // Navegar a un índice de ejercicio específico
+        function jumpToExercise(val) {
+            setActiveIndex(parseInt(val));
+            loadExerciseData();
+        }
+
+        // Avanzar al siguiente ejercicio
+        function nextExercise() {
+            let idx = getActiveIndex();
+            if (idx < 49) {
+                setActiveIndex(idx + 1);
+                loadExerciseData();
+            } else {
+                showToast("¡Has llegado al final de esta sección!", "award", "text-yellow-500");
+            }
+        }
+
+        function prevExercise() {
+            let idx = getActiveIndex();
+            if (idx > 0) {
+                setActiveIndex(idx - 1);
+                loadExerciseData();
+            }
+        }
+
+        // Cargar Datos del ejercicio activo
+        function loadExerciseData() {
+            const idx = getActiveIndex();
+            
+            // Limpiar feedbacks y respuestas previas
+            hideAllFeedbacks();
+            resetActionButtonsToVerify();
+
+            if (activeTab === 'tab1') {
+                const data = s1Exercises[idx];
+                document.getElementById('s1-prompt').innerHTML = data.prompt.replace("___", `<span class="border-b-2 border-dashed border-blue-500 text-blue-500 px-4 py-1 font-extrabold" id="s1-blank">______</span>`);
+                document.getElementById('s1-translation').innerText = data.translation;
+                document.getElementById('s1-input').value = '';
+                document.getElementById('s1-input').focus();
+
+                // Actualizar insignia dinámica de tipo de oración (Afirmativa / Negativa)
+                const badge = document.getElementById('s1-type-badge');
+                if (data.type === 'Negativa') {
+                    badge.className = "px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded-full text-xs font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900/30";
+                    badge.innerHTML = `<i data-lucide="minus-circle" class="w-3.5 h-3.5"></i> Oración Negativa`;
+                } else {
+                    badge.className = "px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-full text-xs font-bold flex items-center gap-1 border border-emerald-200 dark:border-emerald-900/30";
+                    badge.innerHTML = `<i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Oración Afirmativa`;
+                }
+            } 
+            else if (activeTab === 'tab2') {
+                const data = s2Exercises[idx];
+                document.getElementById('s2-prompt').innerText = data.text;
+                document.getElementById('s2-translation').innerText = data.translation;
+                document.getElementById('shadowing-analysis-box').classList.add('hidden');
+                document.getElementById('pronunciation-score').innerText = '0%';
+                document.getElementById('score-bar').style.width = '0%';
+            } 
+            else if (activeTab === 'tab3') {
+                const data = s3Exercises[idx];
+                document.getElementById('s3-prompt').innerText = data.prompt;
+                document.getElementById('s3-translation').innerText = `Traducción de la respuesta: "${data.translation}"`;
+                document.getElementById('s3-input').value = '';
+                document.getElementById('s3-input').focus();
+            }
+            lucide.createIcons();
+
+            // Disparar precarga inteligente del ejercicio actual y de los siguientes
+            triggerPrefetch();
+        }
+
+        // Restablece todos los botones de acción principal al estado por defecto ("Verificar")
+        function resetActionButtonsToVerify() {
+            // Sección 1
+            const s1Btn = document.getElementById('s1-action-btn');
+            if (s1Btn) {
+                s1Btn.onclick = checkSection1Answer;
+                s1Btn.className = "px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
+                s1Btn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i><span>Verificar Respuesta</span>`;
+            }
+
+            // Sección 2
+            const s2Btn = document.getElementById('s2-action-btn');
+            if (s2Btn) {
+                s2Btn.onclick = completeShadowing;
+                s2Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
+                s2Btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i><span>Marcar como Completado</span>`;
+            }
+
+            // Sección 3
+            const s3Btn = document.getElementById('s3-action-btn');
+            if (s3Btn) {
+                s3Btn.onclick = checkSection3Answer;
+                s3Btn.className = "px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
+                s3Btn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i><span>Verificar Pregunta</span>`;
+            }
+        }
+
+        function hideAllFeedbacks() {
+            document.getElementById('s1-feedback').className = "hidden rounded-2xl p-4 border transition-all";
+            document.getElementById('s1-feedback').innerHTML = "";
+            document.getElementById('s2-feedback').className = "hidden rounded-2xl p-4 border transition-all";
+            document.getElementById('s2-feedback').innerHTML = "";
+            document.getElementById('s3-feedback').className = "hidden rounded-2xl p-4 border transition-all";
+            document.getElementById('s3-feedback').innerHTML = "";
+        }
+
+        // --- SISTEMA DE AUDIO INTELIGENTE (Web Speech API o Gemini TTS con Precarga) ---
+
+        // Función de precarga en segundo plano
+        async function triggerPrefetch() {
+            if (!geminiApiKey) return; // Solo precargar si hay llave de API guardada
+
+            // Obtener las frases correspondientes de la pestaña activa
+            let sentencesToPrefetch = [];
+
+            if (activeTab === 'tab1') {
+                // Precargar el actual y los siguientes 2 ejercicios de la Sección 1
+                for (let i = 0; i < 3; i++) {
+                    let index = currentS1Index + i;
+                    if (index < s1Exercises.length) {
+                        const data = s1Exercises[index];
+                        sentencesToPrefetch.push(data.prompt.replace("___", data.solution));
+                    }
+                }
+            } else if (activeTab === 'tab2') {
+                // Precargar el actual y los siguientes 2 ejercicios de la Sección 2 (Shadowing)
+                for (let i = 0; i < 3; i++) {
+                    let index = currentS2Index + i;
+                    if (index < s2Exercises.length) {
+                        sentencesToPrefetch.push(s2Exercises[index].text);
+                    }
+                }
+            }
+
+            // Realizar la precarga asíncrona de manera secuencial sin bloquear la UI
+            for (const text of sentencesToPrefetch) {
+                if (!audioCache[text]) {
+                    prefetchAudio(text);
+                }
+            }
+        }
+
+        // Petición silenciosa a la API para almacenar en caché
+        async function prefetchAudio(text) {
+            try {
+                const base64 = await getGeminiTTS(text, preferredVoice);
+                if (base64) {
+                    audioCache[text] = base64;
+                }
+            } catch (err) {
+                console.warn("Fallo silencioso al precargar audio de Gemini TTS:", text);
+            }
+        }
+
+        // Reproducir audio con latencia cero
+        async function speakSentence(text) {
+            if (geminiApiKey) {
+                // 1. Revisar si ya está en la caché en memoria para reproducción instantánea
+                if (audioCache[text]) {
+                    playAudioFromPCM16Base64(audioCache[text]);
+                    return;
+                }
+
+                // 2. Si no estaba precargado, se descarga asíncronamente
+                try {
+                    showToast("Generando audio con Gemini TTS...", "sparkles", "text-purple-500");
+                    const audioBase64 = await getGeminiTTS(text, preferredVoice);
+                    if (audioBase64) {
+                        // Guardar en caché para futuras reproducciones
+                        audioCache[text] = audioBase64;
+                        playAudioFromPCM16Base64(audioBase64);
+                    } else {
+                        throw new Error("No se obtuvo data de audio.");
+                    }
+                } catch(e) {
+                    console.error("Gemini TTS falló, recurriendo a Web Speech API:", e);
+                    speakWithWebSpeech(text);
+                }
+            } else {
+                // Utilizar Web Speech API local del navegador
+                speakWithWebSpeech(text);
+            }
+        }
+
+        function speakWithWebSpeech(text) {
+            if ('speechSynthesis' in window) {
+                // Cancelar cualquier discurso en progreso
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                
+                // Intentar asignar una voz de Google nativa si está disponible
+                const voices = window.speechSynthesis.getVoices();
+                const googleVoice = voices.find(voice => voice.name.includes('Google US English') || voice.lang === 'en-US');
+                if (googleVoice) {
+                    utterance.voice = googleVoice;
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast("Tu navegador no soporta síntesis de voz.", "alert-triangle", "text-red-500");
+            }
+        }
+
+        // Llamar a la API de Gemini para TTS (gemini-2.5-flash-preview-tts)
+        async function getGeminiTTS(text, voice) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiApiKey}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Say clearly: ${text}` }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: voice
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Implementando política de reintentos con retraso exponencial simple
+            let retries = 3;
+            let delay = 1000;
+            while (retries > 0) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error("Error en la respuesta del servidor Gemini.");
+                    
+                    const data = await response.json();
+                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                    if (audioPart && audioPart.inlineData.data) {
+                        return audioPart.inlineData.data; // Base64 del audio L16 PCM
+                    }
+                    throw new Error("No se encontró parte de audio en el JSON.");
+                } catch (err) {
+                    retries--;
+                    if (retries === 0) {
+                        throw err;
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Convertir PCM16 a WAV y reproducirlo
+        function playAudioFromPCM16Base64(base64Data) {
+            try {
+                const binaryString = atob(base64Data);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                // Formateamos como un archivo WAV reproducible directamente por el navegador (24kHz, 16 bits, Mono por defecto de Gemini)
+                const sampleRate = 24000; 
+                const wavHeader = new ArrayBuffer(44);
+                const view = new DataView(wavHeader);
+                
+                /* RIFF identifier */
+                writeString(view, 0, 'RIFF');
+                /* file length */
+                view.setUint32(4, 36 + bytes.length, true);
+                /* RIFF type */
+                writeString(view, 8, 'WAVE');
+                /* format chunk identifier */
+                writeString(view, 12, 'fmt ');
+                /* format chunk length */
+                view.setUint32(16, 16, true);
+                /* sample format (raw) */
+                view.setUint16(20, 1, true);
+                /* channel count */
+                view.setUint16(22, 1, true);
+                /* sample rate */
+                view.setUint32(24, sampleRate, true);
+                /* byte rate (sample rate * block align) */
+                view.setUint32(28, sampleRate * 2, true);
+                /* block align (channel count * bytes per sample) */
+                view.setUint16(32, 2, true);
+                /* bits per sample */
+                view.setUint16(34, 16, true);
+                /* data chunk identifier */
+                writeString(view, 36, 'data');
+                /* data chunk length */
+                view.setUint32(40, bytes.length, true);
+                
+                const blob = new Blob([wavHeader, bytes], { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(blob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            } catch(e) {
+                console.error("Fallo al reproducir PCM16:", e);
+                showToast("Error de decodificación de audio de IA.", "alert-triangle", "text-red-500");
+            }
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Activadores de altavoz
+        function speakCurrentSentence() {
+            const data = s1Exercises[currentS1Index];
+            const fullSentence = data.prompt.replace("___", data.solution);
+            speakSentence(fullSentence);
+        }
+
+        function speakShadowingSentence() {
+            const data = s2Exercises[currentS2Index];
+            speakSentence(data.text);
+        }
+
+        // --- SISTEMA DE DICTADO (Speech-to-Text) ---
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onerror = function(event) {
+                    if (event.error === 'no-speech') {
+                        console.warn("Speech recognition: No se detectó voz.");
+                        showToast("No se detectó voz. Por favor, asegúrate de hablar cerca de tu micrófono.", "mic-off", "text-amber-500");
+                    } else {
+                        console.error("Error en reconocimiento:", event.error);
+                        showToast("No se pudo iniciar el dictado. Revisa los permisos de micrófono.", "mic-off", "text-red-500");
+                    }
+                    stopAllRecordingsUI();
+                };
+
+                recognition.onend = function() {
+                    stopAllRecordingsUI();
+                };
+            } else {
+                console.warn("Reconocimiento de voz no soportado en este navegador.");
+            }
+        }
+
+        function startListening(targetInputId) {
+            if (!recognition) {
+                showToast("Este navegador no soporta reconocimiento de voz (Usa Chrome o Edge).", "alert-triangle", "text-yellow-500");
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            isRecording = true;
+            document.getElementById(`mic-${targetInputId}`).classList.add('text-red-500', 'animate-pulse');
+            document.getElementById(`dictation-status-${targetInputId}`).classList.remove('hidden');
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const cleanedText = transcript.replace(/\.$/, "");
+                document.getElementById(targetInputId).value = cleanedText;
+                showToast(`Entendido: "${cleanedText}"`, "check", "text-green-500");
+            };
+
+            recognition.start();
+        }
+
+        // Grabación específica para Shadowing
+        function startShadowingRecording() {
+            if (!recognition) {
+                showToast("Tu navegador no soporta dictado de voz.", "alert-triangle", "text-yellow-500");
+                return;
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            isRecording = true;
+            document.getElementById('mic-shadow').classList.add('text-yellow-400', 'animate-spin');
+            document.getElementById('btn-shadow-text').innerText = "Escuchando...";
+            document.getElementById('dictation-status-shadow').classList.remove('hidden');
+
+            recognition.onresult = function(event) {
+                const userTranscript = event.results[0][0].transcript;
+                processShadowingResult(userTranscript);
+            };
+
+            recognition.start();
+        }
+
+        function stopAllRecordingsUI() {
+            isRecording = false;
+            // Pestaña 1
+            const micS1 = document.getElementById('mic-s1-input');
+            if (micS1) micS1.className = "w-5 h-5";
+            const statS1 = document.getElementById('dictation-status-s1-input');
+            if (statS1) statS1.classList.add('hidden');
+
+            // Pestaña 3
+            const micS3 = document.getElementById('mic-s3-input');
+            if (micS3) micS3.className = "w-5 h-5";
+            const statS3 = document.getElementById('dictation-status-s3-input');
+            if (statS3) statS3.classList.add('hidden');
+
+            // Pestaña 2
+            const micShadow = document.getElementById('mic-shadow');
+            if (micShadow) micShadow.className = "w-4.5 h-4.5";
+            const btnShadowText = document.getElementById('btn-shadow-text');
+            if (btnShadowText) btnShadowText.innerText = "Grabar mi Voz";
+            const statShadow = document.getElementById('dictation-status-shadow');
+            if (statShadow) statShadow.classList.add('hidden');
+        }
+
+        // Análisis del Shadowing con algoritmo de similitud por tokens
+        function processShadowingResult(userText) {
+            const originalText = s2Exercises[currentS2Index].text;
+            
+            // Limpieza básica
+            const clean = str => str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+            const cleanUser = clean(userText);
+            const cleanOriginal = clean(originalText);
+
+            // Calcular similitud aproximada
+            const score = calculateStringSimilarity(cleanOriginal, cleanUser);
+            const roundedScore = Math.round(score * 100);
+
+            // Mostrar el bloque de análisis
+            document.getElementById('shadowing-analysis-box').classList.remove('hidden');
+            document.getElementById('user-said-text').innerText = `"${userText}"`;
+            document.getElementById('pronunciation-score').innerText = `${roundedScore}%`;
+            document.getElementById('score-bar').style.width = `${roundedScore}%`;
+
+            let feedbackMsg = "";
+            if (roundedScore >= 85) {
+                feedbackMsg = "¡Increíble! Tu pronunciación y entonación son dignas de un nativo. ¡Excelente trabajo!";
+                document.getElementById('pronunciation-score').className = "text-lg font-black text-emerald-500";
+                document.getElementById('score-bar').className = "h-full bg-emerald-500 transition-all";
+                // Autocompletar y transformar botón de Shadowing automáticamente
+                markShadowingStepCompleted(true);
+            } else if (roundedScore >= 60) {
+                feedbackMsg = "¡Buen intento! Se entiende bastante bien, pero puedes ajustar un poco más la pronunciación de las palabras individuales. Inténtalo de nuevo.";
+                document.getElementById('pronunciation-score').className = "text-lg font-black text-yellow-500";
+                document.getElementById('score-bar').className = "h-full bg-yellow-500 transition-all";
+            } else {
+                feedbackMsg = "Parece que algunas palabras no coincidieron bien. Intenta escuchar nuevamente la oración de ejemplo y repite prestando atención a las pausas.";
+                document.getElementById('pronunciation-score').className = "text-lg font-black text-red-500";
+                document.getElementById('score-bar').className = "h-full bg-red-500 transition-all";
+            }
+
+            document.getElementById('pronunciation-feedback-text').innerText = feedbackMsg;
+        }
+
+        // Similitud Jaccard simple basada en tokens (palabras)
+        function calculateStringSimilarity(str1, str2) {
+            const words1 = str1.split(/\s+/);
+            const words2 = str2.split(/\s+/);
+            const set1 = new Set(words1);
+            const set2 = new Set(words2);
+            
+            const intersection = new Set([...set1].filter(x => set2.has(x)));
+            const union = new Set([...set1, ...set2]);
+            
+            return intersection.size / union.size;
+        }
+
+        // --- VERIFICADORES DE RESPUESTA ---
+
+        // Sección 1 (Con validación de Oración Completa y transformación del botón)
+        function checkSection1Answer() {
+            const val = document.getElementById('s1-input').value.trim();
+            const data = s1Exercises[currentS1Index];
+            const feedbackEl = document.getElementById('s1-feedback');
+
+            if (!val) {
+                showToast("Por favor ingresa una respuesta primero.", "alert-circle", "text-yellow-500");
+                return;
+            }
+
+            // Normalizador general para mitigar problemas con contracciones, puntuación y espacios
+            const clean = str => str.toLowerCase()
+                .replace(/is not/g, "isn't")
+                .replace(/are not/g, "aren't")
+                .replace(/am not/g, "aren't") 
+                .replace(/[^a-z0-9]/g, "")
+                .trim();
+
+            const userCleaned = clean(val);
+            const solutionCleaned = clean(data.solution);
+            
+            // Reconstruir la oración correcta esperada para comparar
+            const fullCorrectSentence = data.prompt.replace("___", data.solution);
+            const fullCleaned = clean(fullCorrectSentence);
+
+            // Es correcto si coincide con la respuesta corta O con la oración completa
+            const isCorrect = (userCleaned === solutionCleaned) || (userCleaned === fullCleaned);
+
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.className = "rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300 space-y-4 animate-fade-in";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-emerald-500 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-lg">¡Respuesta Correcta!</p>
+                            <p class="text-sm mt-1">${data.context}</p>
+                            <p class="text-xs font-semibold uppercase text-emerald-600 dark:text-emerald-400 mt-2">Oración final: "${data.prompt.replace("___", data.solution)}"</p>
+                        </div>
+                    </div>
+                `;
+                // Actualizar interfaz interactiva del espacio en blanco
+                document.getElementById('s1-blank').innerText = data.solution;
+                document.getElementById('s1-blank').className = "text-emerald-500 px-4 py-1 font-extrabold";
+
+                // Guardar progreso
+                progress.tab1[currentS1Index] = true;
+                saveProgressToStorage();
+
+                // TRANSFORMAR BOTÓN EN "SIGUIENTE EJERCICIO"
+                const s1Btn = document.getElementById('s1-action-btn');
+                if (s1Btn) {
+                    s1Btn.onclick = nextExercise;
+                    s1Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2 animate-bounce-once";
+                    s1Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                }
+            } else {
+                feedbackEl.className = "rounded-2xl p-4 border bg-red-500/10 border-red-500/20 text-red-800 dark:text-red-300";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="x-circle" class="w-6 h-6 text-red-500 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-lg">Respuesta Incorrecta</p>
+                            <p class="text-sm mt-1">Tu respuesta: <span class="line-through">"${val}"</span>. Inténtalo de nuevo o revisa las reglas gramaticales básicas de A1.</p>
+                            <button onclick="revealSection1Answer()" class="mt-2 text-xs font-bold text-blue-500 hover:underline">Revelar respuesta correcta</button>
+                        </div>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function revealSection1Answer() {
+            const data = s1Exercises[currentS1Index];
+            document.getElementById('s1-input').value = data.solution;
+            showToast("Respuesta con contracción autocompletada", "info", "text-blue-500");
+        }
+
+        // Sección 2: Marcado de Shadowing
+        function completeShadowing() {
+            markShadowingStepCompleted(false);
+        }
+
+        function markShadowingStepCompleted(auto) {
+            progress.tab2[currentS2Index] = true;
+            saveProgressToStorage();
+            
+            const feedbackEl = document.getElementById('s2-feedback');
+            feedbackEl.classList.remove('hidden');
+            feedbackEl.className = "rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300 space-y-4";
+            feedbackEl.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <i data-lucide="check" class="w-6 h-6 text-emerald-500 shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="font-bold text-md">${auto ? '¡Excelente pronunciación (≥85%)! Ejercicio aprobado.' : '¡Ejercicio marcado como completado!'}</p>
+                        <p class="text-xs mt-1">Has dominado la entonación de esta oración de nivel A1.</p>
+                    </div>
+                </div>
+            `;
+
+            // TRANSFORMAR EL BOTÓN DE ACCIÓN EN "SIGUIENTE EJERCICIO"
+            const s2Btn = document.getElementById('s2-action-btn');
+            if (s2Btn) {
+                s2Btn.onclick = nextExercise;
+                s2Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
+                s2Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+            }
+
+            lucide.createIcons();
+        }
+
+        // Sección 3: Reverse Questions
+        function checkSection3Answer() {
+            const val = document.getElementById('s3-input').value.trim().toLowerCase();
+            const data = s3Exercises[currentS3Index];
+            const feedbackEl = document.getElementById('s3-feedback');
+
+            if (!val) {
+                showToast("Por favor formula una pregunta primero.", "alert-circle", "text-yellow-500");
+                return;
+            }
+
+            // Normalización de signos de puntuación y espacios
+            const cleanedInput = val.replace(/[?¿]/g, "").trim();
+            const cleanedSolution = data.solution.toLowerCase().replace(/[?¿]/g, "").trim();
+
+            const isCorrect = compareAnswers(cleanedInput, cleanedSolution);
+
+            feedbackEl.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackEl.className = "rounded-2xl p-4 border bg-purple-500/10 border-purple-500/20 text-purple-800 dark:text-purple-300 space-y-4";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-purple-500 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-lg">¡Excelente Pregunta!</p>
+                            <p class="text-sm mt-1">${data.context}</p>
+                            <p class="text-xs font-bold text-purple-600 dark:text-purple-400 mt-2">Pregunta perfecta: "${data.solution}"</p>
+                        </div>
+                    </div>
+                `;
+                progress.tab3[currentS3Index] = true;
+                saveProgressToStorage();
+
+                // TRANSFORMAR EL BOTÓN DE ACCIÓN EN "SIGUIENTE EJERCICIO"
+                const s3Btn = document.getElementById('s3-action-btn');
+                if (s3Btn) {
+                    s3Btn.onclick = nextExercise;
+                    s3Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
+                    s3Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                }
+            } else {
+                feedbackEl.className = "rounded-2xl p-4 border bg-red-500/10 border-red-500/20 text-red-800 dark:text-red-300";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i data-lucide="x-circle" class="w-6 h-6 text-red-500 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-lg">Estructura incorrecta</p>
+                            <p class="text-sm mt-1">Recuerda iniciar con el verbo auxiliar o Wh-word. Tu respuesta actual: "${val}".</p>
+                            <button onclick="revealSection3Answer()" class="mt-2 text-xs font-bold text-purple-500 hover:underline">Revelar pregunta sugerida</button>
+                        </div>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function revealSection3Answer() {
+            const data = s3Exercises[currentS3Index];
+            document.getElementById('s3-input').value = data.solution;
+            showToast("Pregunta autocompletada", "info", "text-purple-500");
+        }
+
+        // Comparador inteligente que ignora diferencias cosméticas de contracciones
+        function compareAnswers(a, b) {
+            const clean = str => str.toLowerCase()
+                .replace(/is not/g, "isn't")
+                .replace(/are not/g, "aren't")
+                .replace(/am not/g, "aren't") 
+                .replace(/what is/g, "what's")
+                .replace(/where is/g, "where's")
+                .replace(/who is/g, "who's")
+                .replace(/[^a-z0-9]/g, "")
+                .trim();
+
+            return clean(a) === clean(b);
+        }
+
+        // --- TOAST NOTIFICATIONS ---
+        function showToast(message, iconName = "info", colorClass = "text-blue-400") {
+            const toast = document.getElementById('toast-notif');
+            const text = document.getElementById('toast-text');
+            const icon = document.getElementById('toast-icon');
+
+            text.innerText = message;
+            icon.setAttribute('data-lucide', iconName);
+            icon.className = `w-5 h-5 ${colorClass}`;
+            
+            lucide.createIcons();
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
