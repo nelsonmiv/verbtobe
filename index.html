@@ -296,7 +296,7 @@
 
                     <!-- CAJA DE RESPUESTA / ENTRADA -->
                     <div class="space-y-3">
-                        <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Tu pregunta formulada:</label>
+                        <label id="s3-input-label" class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Tu pregunta formulada:</label>
                         <div class="relative">
                             <input type="text" id="s3-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-lg text-slate-900 dark:text-white animate-pulse-once" placeholder="Ej: Are you studying english? / Is he running?" autocomplete="off">
                             <button onclick="startListening('s3-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-purple-500 transition-all" title="Dictar respuesta">
@@ -390,6 +390,7 @@
     <!-- SCRIPTS DE DATOS (50 Ejercicios por Sección) -->
     <script>
         // Sección 1: Ejercicios de Afirmativo y Negativo (To Be y Present Continuous)
+        // Se han adaptado todas las soluciones negativas para emplear de forma prioritaria la contracción.
         const s1Exercises = [
             { id: 1, prompt: "I ___ a student.", translation: "Yo soy un estudiante.", solution: "am", context: "Usamos 'am' con el pronombre 'I' en presente.", type: "Afirmativa" },
             { id: 2, prompt: "She ___ playing soccer right now.", translation: "Ella está jugando fútbol ahora mismo.", solution: "is", context: "Present Continuous: 'She is' + verbo con -ing.", type: "Afirmativa" },
@@ -429,7 +430,7 @@
             { id: 36, prompt: "My brother ___ riding his bicycle.", translation: "Mi hermano está montando su bicicleta.", solution: "is", context: "Hermano (He) requiere el auxiliar 'is'.", type: "Afirmativa" },
             { id: 37, prompt: "I ___ making dinner, I ordered pizza.", translation: "No estoy haciendo la cena, pedí pizza.", solution: "am not", context: "Negación para primera persona singular: 'I am not'.", type: "Negativa" },
             { id: 38, prompt: "You and I ___ studying together.", translation: "Tú y yo estamos estudiando juntos.", solution: "are", context: "Tú y yo equivale a 'We' (Nosotros), usamos 'are'.", type: "Afirmativa" },
-            { id: 39, prompt: "They ___ cooking delicious pasta.", translation: "Ellos están cocinando pasta de forma deliciosa.", solution: "are", context: "Sujeto 'They' utiliza 'are'.", type: "Afirmativa" },
+            { id: 39, prompt: "They ___ cooking delicious pasta.", translation: "Ellos están cocinando pasta de forma deiciosa.", solution: "are", context: "Sujeto 'They' utiliza 'are'.", type: "Afirmativa" },
             { id: 40, prompt: "The dog ___ barking at the cat.", translation: "El perro está ladrándole al gato.", solution: "is", context: "Perro (singular) requiere 'is' para continuous.", type: "Afirmativa" },
             { id: 41, prompt: "We ___ going to the beach.", translation: "Nosotros no vamos a ir a la playa.", solution: "aren't", context: "Negativo con contracción de Present Continuous para 'We': 'we aren't going'.", type: "Negativa" },
             { id: 42, prompt: "She ___ an excellent doctor.", translation: "Ella es una excelente doctora.", solution: "is", context: "Profesión con To Be para 'She': usamos 'is'.", type: "Afirmativa" },
@@ -554,6 +555,35 @@
 
     <!-- MOTOR LÓGICO DE LA APP -->
     <script>
+        // Adaptador seguro para almacenamiento local en el navegador
+        // Protege contra SecurityErrors en entornos sandbox (iframes de desarrollo)
+        const memoryStorage = {};
+        const safeStorage = {
+            getItem: function(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.warn("Storage bloqueado, cargando memoria temporal.", e);
+                    return memoryStorage[key] || null;
+                }
+            },
+            setItem: function(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    console.warn("Storage bloqueado, escribiendo en memoria temporal.", e);
+                    memoryStorage[key] = String(value);
+                }
+            },
+            removeItem: function(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    delete memoryStorage[key];
+                }
+            }
+        };
+
         // Variables de estado
         let activeTab = 'tab1';
         let currentS1Index = 0;
@@ -594,9 +624,9 @@
             document.documentElement.classList.toggle('dark');
         }
 
-        // Cargar progreso desde localStorage
+        // Cargar progreso utilizando el storage seguro
         function loadProgressFromStorage() {
-            const saved = localStorage.getItem('english_a1_progress');
+            const saved = safeStorage.getItem('english_a1_progress');
             if (saved) {
                 try {
                     progress = JSON.parse(saved);
@@ -606,9 +636,9 @@
             }
         }
 
-        // Guardar progreso en localStorage
+        // Guardar progreso utilizando el storage seguro
         function saveProgressToStorage() {
-            localStorage.setItem('english_a1_progress', JSON.stringify(progress));
+            safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
             updateProgressUI();
         }
 
@@ -655,10 +685,10 @@
             document.getElementById('global-percentage').innerText = `Progreso Total: ${totalPercentage}%`;
         }
 
-        // Configuración de Gemini
+        // Configuración de Gemini utilizando el storage seguro
         function loadGeminiConfig() {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            const savedVoice = localStorage.getItem('gemini_voice');
+            const savedKey = safeStorage.getItem('gemini_api_key');
+            const savedVoice = safeStorage.getItem('gemini_voice');
             
             if (savedKey) {
                 geminiApiKey = savedKey;
@@ -681,7 +711,7 @@
             }
         }
 
-        // Guardar API Key y preferencias de Gemini
+        // Guardar API Key y preferencias de Gemini utilizando el storage seguro
         function saveGeminiSettings() {
             const key = document.getElementById('gemini-key-input').value.trim();
             const voice = document.getElementById('gemini-voice-select').value;
@@ -691,7 +721,7 @@
 
             if (key) {
                 geminiApiKey = key;
-                localStorage.setItem('gemini_api_key', key);
+                safeStorage.setItem('gemini_api_key', key);
                 document.getElementById('gemini-badge').classList.remove('bg-red-500');
                 document.getElementById('gemini-badge').classList.add('bg-emerald-500');
                 showToast("API Key de Gemini guardada", "sparkles", "text-purple-500");
@@ -701,13 +731,13 @@
             }
             
             preferredVoice = voice;
-            localStorage.setItem('gemini_voice', voice);
+            safeStorage.setItem('gemini_voice', voice);
             toggleGeminiModal();
         }
 
         function clearGeminiSettings() {
             geminiApiKey = '';
-            localStorage.removeItem('gemini_api_key');
+            safeStorage.removeItem('gemini_api_key');
             document.getElementById('gemini-key-input').value = '';
             document.getElementById('gemini-badge').classList.remove('bg-emerald-500');
             document.getElementById('gemini-badge').classList.add('bg-red-500');
@@ -761,6 +791,7 @@
             return currentS3Index;
         }
 
+        // Establece el índice del ejercicio de la sección activa
         function setActiveIndex(val) {
             if (activeTab === 'tab1') currentS1Index = val;
             else if (activeTab === 'tab2') currentS2Index = val;
@@ -808,7 +839,7 @@
                 document.getElementById('s1-input').value = '';
                 document.getElementById('s1-input').focus();
 
-                // Actualizar insignia dinámica de tipo de oración (Afirmativa / Negativa)
+                // Actualizar insignia de tipo de oración (Afirmativa / Negativa)
                 const badge = document.getElementById('s1-type-badge');
                 if (data.type === 'Negativa') {
                     badge.className = "px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded-full text-xs font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900/30";
@@ -832,6 +863,25 @@
                 document.getElementById('s3-translation').innerText = `Traducción de la respuesta: "${data.translation}"`;
                 document.getElementById('s3-input').value = '';
                 document.getElementById('s3-input').focus();
+
+                // DETECCION DE PISTA DE "WH QUESTION" PARA EL ESTUDIANTE (REVERSE QUESTIONS)
+                const solutionLower = data.solution.toLowerCase().trim();
+                const whQuestions = ["what time", "how old", "what color", "where", "what", "why", "who", "how"];
+                let matchedWh = null;
+                for (const wh of whQuestions) {
+                    if (solutionLower.startsWith(wh)) {
+                        // Formatear correctamente la primera letra del Wh-word (Ej. "what time" -> "What Time")
+                        matchedWh = wh.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                        break;
+                    }
+                }
+
+                const labelEl = document.getElementById('s3-input-label');
+                if (matchedWh) {
+                    labelEl.innerHTML = `Tu pregunta formulada: <span class="text-purple-600 dark:text-purple-400 font-bold ml-1 animate-pulse-once">(Pista: la pregunta empieza con "${matchedWh}")</span>`;
+                } else {
+                    labelEl.innerHTML = `Tu pregunta formulada:`;
+                }
             }
             lucide.createIcons();
 
