@@ -23,6 +23,8 @@
     </script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Identity Services para OAuth 2.0 -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
 
@@ -40,7 +42,7 @@
             
             <!-- CONTROLES GLOBALES -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Configuración Gemini API -->
+                <!-- Configuración Gemini API / Google OAuth -->
                 <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
                     <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
                     <span>Gemini TTS</span>
@@ -92,7 +94,7 @@
             </div>
             <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400">
                 <span id="global-percentage">Progreso Total: 0%</span>
-                <button onclick="resetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1">
+                <button onclick="requestResetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Reiniciar Progreso
                 </button>
             </div>
@@ -330,35 +332,58 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN GEMINI API (CON SINTESIS DE VOZ PROPIA) -->
+    <!-- MODAL DE CONFIGURACIÓN EXCLUSIVO CON GOOGLE OAUTH -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-start">
                 <div class="flex items-center gap-2">
                     <i data-lucide="sparkles" class="w-6 h-6 text-purple-500"></i>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Configurar Gemini TTS</h3>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Conectar Gemini TTS</h3>
                 </div>
                 <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Al añadir tu API Key de Gemini, la aplicación utilizará la voz de alta calidad <strong>Gemini TTS (modelo gemini-2.5-flash-preview-tts)</strong> en lugar de las voces estándar del sistema operativo.
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Utiliza la síntesis de voz de alta fidelidad <strong>Gemini TTS</strong> conectando tu cuenta de estudiante. Las peticiones correrán de forma segura bajo tu propia cuenta de Google.
             </p>
 
-            <div class="space-y-2">
-                <div class="flex justify-between items-center mb-1">
-                    <label class="block text-xs font-bold uppercase text-slate-400">Gemini API Key</label>
-                    <!-- ACCESO DIRECTO DE OBTENCIÓN DE API KEY -->
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-xs text-purple-500 dark:text-purple-400 hover:text-purple-400 dark:hover:text-purple-300 font-semibold flex items-center gap-1 hover:underline">
-                        <span>Obtener mi API Key</span>
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                    </a>
+            <!-- PANEL DE CONFIGURACIÓN DIRECTA -->
+            <div class="space-y-4">
+                <!-- Tarjeta informativa de Google -->
+                <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                    <p class="text-xs text-blue-800 dark:text-blue-300">
+                        Inicia sesión con tu correo escolar o personal. Tus credenciales de acceso están protegidas por el protocolo seguro de Google Identity.
+                    </p>
                 </div>
-                <input type="password" id="gemini-key-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-slate-900 dark:text-white" placeholder="AIzaSy...">
+
+                <!-- ESTADO DEL PERFIL CONECTADO (Inyectado dinámicamente si hay sesión) -->
+                <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <img id="oauth-profile-img" src="" class="w-10 h-10 rounded-full border border-purple-400 object-cover" alt="Perfil">
+                    <div class="overflow-hidden">
+                        <p id="oauth-profile-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Cargando...</p>
+                        <p id="oauth-profile-email" class="text-[10px] text-slate-400 truncate">Estudiante</p>
+                    </div>
+                </div>
+
+                <!-- BOTON DE CONECTAR CON GOOGLE -->
+                <div class="flex flex-col items-center justify-center py-1 space-y-2">
+                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-sm transition-all shadow-sm">
+                        <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.57-5.17 3.57-8.73z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.13 0-5.78-2.11-6.73-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/>
+                            <path fill="#FBBC05" d="M5.27 14.24A7.16 7.16 0 0 1 5 12c0-.79.13-1.57.38-2.31V6.54H1.21A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.21 5.46l4.06-3.22z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.18 2.12 1.21 5.7l4.06 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+                        </svg>
+                        <span id="oauth-btn-text">Vincular Cuenta Google</span>
+                    </button>
+                    <!-- INDICADOR DE EXPIRACION -->
+                    <p id="oauth-status" class="text-xs text-slate-400 italic text-center hidden"></p>
+                </div>
             </div>
 
+            <!-- SELECCIONADOR DE VOZ COMUN -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
                 <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white">
@@ -370,13 +395,29 @@
                 </select>
             </div>
 
+            <!-- BOTONES DE ACCIÓN GENERAL -->
             <div class="flex gap-3 pt-2">
                 <button onclick="saveGeminiSettings()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all shadow-md">
                     Guardar Configuración
                 </button>
                 <button onclick="clearGeminiSettings()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm transition-all">
-                    Borrar Key
+                    Cerrar Sesión
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN MODERNO (REEMPLAZA CONFIRM NATIVO) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-center justify-center hidden px-4">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center">
+            <div class="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="confirm-title">¿Estás seguro?</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400" id="confirm-desc">Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3 pt-2">
+                <button id="confirm-btn-yes" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs transition-all shadow-md">Sí, reiniciar</button>
+                <button onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">Cancelar</button>
             </div>
         </div>
     </div>
@@ -390,7 +431,6 @@
     <!-- SCRIPTS DE DATOS (50 Ejercicios por Sección) -->
     <script>
         // Sección 1: Ejercicios de Afirmativo y Negativo (To Be y Present Continuous)
-        // Se han adaptado todas las soluciones negativas para emplear de forma prioritaria la contracción.
         const s1Exercises = [
             { id: 1, prompt: "I ___ a student.", translation: "Yo soy un estudiante.", solution: "am", context: "Usamos 'am' con el pronombre 'I' en presente.", type: "Afirmativa" },
             { id: 2, prompt: "She ___ playing soccer right now.", translation: "Ella está jugando fútbol ahora mismo.", solution: "is", context: "Present Continuous: 'She is' + verbo con -ing.", type: "Afirmativa" },
@@ -455,9 +495,9 @@
             { id: 7, text: "You are doing a fantastic job.", translation: "Estás haciendo un trabajo fantástico." },
             { id: 8, text: "I am not watching a movie.", translation: "No estoy viendo una película." },
             { id: 9, text: "The cat is sleeping on my bed.", translation: "El gato está durmiendo en mi cama." },
-            { id: 10, text: "My parents are working right now.", translation: "Mis parents are working right now." },
+            { id: 10, text: "My parents are working right now.", translation: "Mis padres están trabajando ahora mismo." },
             { id: 11, text: "She is not feeling very well.", translation: "Ella no se está sintiendo muy bien." },
-            { id: 12, text: "We are cooking delicious pasta.", translation: "Estamos cocinando pasta de forma deiciosa." },
+            { id: 12, text: "We are cooking delicious pasta.", translation: "Estamos cocinando pasta deliciosa." },
             { id: 13, text: "The train is arriving at the station.", translation: "El tren está llegando a la estación." },
             { id: 14, text: "They are not studying tonight.", translation: "Ellos no están estudiando esta noche." },
             { id: 15, text: "I am wearing a blue sweater.", translation: "Estoy usando un suéter azul." },
@@ -492,7 +532,7 @@
             { id: 44, text: "He is not wearing his glasses.", translation: "Él no está usando sus lentes." },
             { id: 45, text: "We are building a sandcastle.", translation: "Estamos construyendo un castillo de arena." },
             { id: 46, text: "The flowers are opening in spring.", translation: "Las flores se están abriendo en primavera." },
-            { id: 47, text: "You are learning very quickly.", translation: "Estás haciendo progresos muy rápidos." },
+            { id: 47, text: "You are learning very quickly.", transition: "Estás haciendo progresos muy rápidos." },
             { id: 48, text: "It is not snowing this morning.", translation: "No está nevando esta mañana." },
             { id: 49, text: "I am opening the main door.", translation: "Estoy abriendo la puerta principal." },
             { id: 50, text: "They are celebrating a birthday.", translation: "Ellos están celebrando un cumpleaños." }
@@ -556,7 +596,6 @@
     <!-- MOTOR LÓGICO DE LA APP -->
     <script>
         // Adaptador seguro para almacenamiento local en el navegador
-        // Protege contra SecurityErrors en entornos sandbox (iframes de desarrollo)
         const memoryStorage = {};
         const safeStorage = {
             getItem: function(key) {
@@ -600,9 +639,20 @@
         // Caché en memoria para audios pre-generados de Gemini TTS (Clave: Texto, Valor: Base64 PCM16)
         let audioCache = {};
 
-        // Credenciales Gemini API (Opcionales)
-        let geminiApiKey = '';
+        // Métodos de autenticación y claves (Client ID harcodeado fijamente)
+        const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
+        let googleAccessToken = '';
+        let googleTokenExpiry = 0; // Timestamp en ms
         let preferredVoice = 'Kore';
+
+        // Almacenar perfil de Google del alumno
+        let studentProfile = null;
+
+        // Callback pendiente para confirmación modal
+        let onConfirmCallback = null;
+
+        // Cliente de tokens de Google Identity Services
+        let tokenClient;
 
         // Reconocimiento de Voz nativo
         let recognition;
@@ -617,6 +667,7 @@
             buildExerciseSelectors();
             loadExerciseData();
             initSpeechRecognition();
+            initGoogleOAuthClient();
         };
 
         // Cambiar Modo de Luz / Oscuro
@@ -642,19 +693,45 @@
             updateProgressUI();
         }
 
-        // Borrar Progreso
-        function resetAllProgress() {
-            if (confirm("¿Estás seguro de que quieres reiniciar todo tu progreso?")) {
-                progress = {
-                    tab1: Array(50).fill(false),
-                    tab2: Array(50).fill(false),
-                    tab3: Array(50).fill(false)
-                };
-                clearAudioCache();
-                saveProgressToStorage();
-                loadExerciseData();
-                showToast("Progreso reiniciado", "trash-2", "text-red-500");
-            }
+        // Lanzar Modal de Confirmación Moderno (Reemplazo de confirm())
+        function requestResetAllProgress() {
+            showConfirmModal(
+                "¿Reiniciar Progreso?", 
+                "Se borrarán de forma permanente todas tus respuestas y aciertos guardados. Tendrás que empezar de nuevo.",
+                function() {
+                    progress = {
+                        tab1: Array(50).fill(false),
+                        tab2: Array(50).fill(false),
+                        tab3: Array(50).fill(false)
+                    };
+                    clearAudioCache();
+                    saveProgressToStorage();
+                    loadExerciseData();
+                    showToast("Todo el progreso ha sido reiniciado", "trash-2", "text-red-500");
+                }
+            );
+        }
+
+        // Lógica de Modales de confirmación Custom
+        function showConfirmModal(title, description, onConfirm) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-desc').innerText = description;
+            onConfirmCallback = onConfirm;
+            
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+            
+            // Vincular evento de confirmación única
+            const confirmBtn = document.getElementById('confirm-btn-yes');
+            confirmBtn.onclick = function() {
+                if (onConfirmCallback) onConfirmCallback();
+                closeConfirmModal();
+            };
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            onConfirmCallback = null;
         }
 
         // Vaciar la caché local de audios
@@ -687,62 +764,176 @@
 
         // Configuración de Gemini utilizando el storage seguro
         function loadGeminiConfig() {
-            const savedKey = safeStorage.getItem('gemini_api_key');
             const savedVoice = safeStorage.getItem('gemini_voice');
+            const savedAccessToken = safeStorage.getItem('google_access_token');
+            const savedExpiry = safeStorage.getItem('google_token_expiry');
+            const savedProfile = safeStorage.getItem('google_student_profile');
             
-            if (savedKey) {
-                geminiApiKey = savedKey;
-                document.getElementById('gemini-key-input').value = savedKey;
-                document.getElementById('gemini-badge').classList.remove('bg-red-500');
-                document.getElementById('gemini-badge').classList.add('bg-emerald-500');
+            if (savedAccessToken && savedExpiry) {
+                googleAccessToken = savedAccessToken;
+                googleTokenExpiry = parseInt(savedExpiry);
             }
+
+            if (savedProfile) {
+                try {
+                    studentProfile = JSON.parse(savedProfile);
+                } catch (e) {
+                    console.error("Error cargando perfil de estudiante:", e);
+                }
+            }
+
             if (savedVoice) {
                 preferredVoice = savedVoice;
                 document.getElementById('gemini-voice-select').value = savedVoice;
+            }
+
+            updateAuthBadgeUI();
+        }
+
+        // Actualizar visualmente la insignia e indicador de OAuth de Google
+        function updateAuthBadgeUI() {
+            const badge = document.getElementById('gemini-badge');
+            const oauthStatusText = document.getElementById('oauth-status');
+            const oauthBtnText = document.getElementById('oauth-btn-text');
+            const profileCard = document.getElementById('oauth-profile-card');
+
+            const now = Date.now();
+            if (googleAccessToken && now < googleTokenExpiry) {
+                // Estado Conectado Correctamente
+                badge.classList.remove('bg-red-500');
+                badge.classList.add('bg-emerald-500');
+                
+                const minLeft = Math.round((googleTokenExpiry - now) / 60000);
+                oauthStatusText.classList.remove('hidden');
+                oauthStatusText.innerHTML = `Sesión Google activa. Expira en ~${minLeft} min.`;
+                oauthStatusText.className = "text-xs text-emerald-500 font-semibold text-center";
+                oauthBtnText.innerText = "¡Cuenta Google Vinculada!";
+
+                // Renderizar perfil de Google del estudiante
+                if (studentProfile) {
+                    profileCard.classList.remove('hidden');
+                    document.getElementById('oauth-profile-img').src = studentProfile.picture || '';
+                    document.getElementById('oauth-profile-name').innerText = studentProfile.name || 'Estudiante';
+                    document.getElementById('oauth-profile-email').innerText = studentProfile.email || '';
+                } else {
+                    profileCard.classList.add('hidden');
+                }
+            } else {
+                // Estado Desconectado o Expirado
+                badge.classList.remove('bg-emerald-500');
+                badge.classList.add('bg-red-500');
+                oauthStatusText.classList.remove('hidden');
+                oauthStatusText.innerText = "No has vinculado tu cuenta de Google.";
+                oauthStatusText.className = "text-xs text-red-500 font-medium text-center";
+                oauthBtnText.innerText = "Vincular Cuenta Google";
+                profileCard.classList.add('hidden');
             }
         }
 
         function toggleGeminiModal() {
             const modal = document.getElementById('gemini-modal');
             modal.classList.toggle('hidden');
-            // Asegurar que Lucide renderice los iconos nuevos al abrir el modal
             if (!modal.classList.contains('hidden')) {
                 lucide.createIcons();
+                updateAuthBadgeUI();
             }
         }
 
-        // Guardar API Key y preferencias de Gemini utilizando el storage seguro
-        function saveGeminiSettings() {
-            const key = document.getElementById('gemini-key-input').value.trim();
-            const voice = document.getElementById('gemini-voice-select').value;
+        // Inicializar el cliente de Google Identity Services con los scopes correctos
+        function initGoogleOAuthClient() {
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                setTimeout(initGoogleOAuthClient, 1000);
+                return;
+            }
 
-            // Limpiar caché previa de audio porque podría haber cambiado la voz o la key
-            clearAudioCache();
+            try {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: googleClientId,
+                    scope: 'https://www.googleapis.com/auth/generative-language email profile openid',
+                    callback: (tokenResponse) => {
+                        if (tokenResponse.error !== undefined) {
+                            console.error("Error en Google Auth:", tokenResponse.error);
+                            showToast("Error de autenticación", "alert-triangle", "text-red-500");
+                            return;
+                        }
 
-            if (key) {
-                geminiApiKey = key;
-                safeStorage.setItem('gemini_api_key', key);
-                document.getElementById('gemini-badge').classList.remove('bg-red-500');
-                document.getElementById('gemini-badge').classList.add('bg-emerald-500');
-                showToast("API Key de Gemini guardada", "sparkles", "text-purple-500");
-                
-                // Iniciar la precarga inmediatamente después de guardar la llave
+                        googleAccessToken = tokenResponse.access_token;
+                        googleTokenExpiry = Date.now() + (parseInt(tokenResponse.expires_in) * 1000);
+                        
+                        safeStorage.setItem('google_access_token', googleAccessToken);
+                        safeStorage.setItem('google_token_expiry', googleTokenExpiry);
+                        
+                        // Obtener información de perfil directamente para una UI amigable
+                        fetchStudentProfileInfo(googleAccessToken);
+                    },
+                });
+            } catch (e) {
+                console.error("Error inicializando tokenClient de Google:", e);
+            }
+        }
+
+        // Descargar datos básicos del estudiante para desplegarlos en pantalla
+        async function fetchStudentProfileInfo(token) {
+            try {
+                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    studentProfile = {
+                        name: data.name,
+                        email: data.email,
+                        picture: data.picture
+                    };
+                    safeStorage.setItem('google_student_profile', JSON.stringify(studentProfile));
+                }
+            } catch (e) {
+                console.warn("No se pudo obtener el perfil público de Google:", e);
+            } finally {
+                showToast("¡Cuenta Google vinculada correctamente!", "check", "text-emerald-500");
+                updateAuthBadgeUI();
                 triggerPrefetch();
             }
-            
-            preferredVoice = voice;
-            safeStorage.setItem('gemini_voice', voice);
-            toggleGeminiModal();
         }
 
-        function clearGeminiSettings() {
-            geminiApiKey = '';
-            safeStorage.removeItem('gemini_api_key');
-            document.getElementById('gemini-key-input').value = '';
-            document.getElementById('gemini-badge').classList.remove('bg-emerald-500');
-            document.getElementById('gemini-badge').classList.add('bg-red-500');
+        // Ejecutar flujo de Login con Google OAuth
+        function loginWithGoogleOAuth() {
+            if (!tokenClient) {
+                initGoogleOAuthClient();
+            }
+
+            if (tokenClient) {
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } else {
+                showToast("Fallo al inicializar cliente de Google. Reintente.", "alert-triangle", "text-red-500");
+            }
+        }
+
+        // Guardar preferencias generales (como la voz preferida)
+        function saveGeminiSettings() {
+            const voice = document.getElementById('gemini-voice-select').value;
             clearAudioCache();
-            showToast("API Key de Gemini eliminada.", "info", "text-blue-500");
+            preferredVoice = voice;
+            safeStorage.setItem('gemini_voice', voice);
+
+            updateAuthBadgeUI();
+            toggleGeminiModal();
+            triggerPrefetch();
+        }
+
+        // Cerrar sesión y vaciar tokens guardados en el navegador
+        function clearGeminiSettings() {
+            googleAccessToken = '';
+            googleTokenExpiry = 0;
+            studentProfile = null;
+            
+            safeStorage.removeItem('google_access_token');
+            safeStorage.removeItem('google_token_expiry');
+            safeStorage.removeItem('google_student_profile');
+            
+            clearAudioCache();
+            updateAuthBadgeUI();
+            showToast("Sesión de Google cerrada.", "info", "text-blue-500");
             toggleGeminiModal();
         }
 
@@ -870,7 +1061,6 @@
                 let matchedWh = null;
                 for (const wh of whQuestions) {
                     if (solutionLower.startsWith(wh)) {
-                        // Formatear correctamente la primera letra del Wh-word (Ej. "what time" -> "What Time")
                         matchedWh = wh.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                         break;
                     }
@@ -885,11 +1075,10 @@
             }
             lucide.createIcons();
 
-            // Disparar precarga inteligente del ejercicio actual y de los siguientes
+            // Disparar precarga inteligente
             triggerPrefetch();
         }
 
-        // Restablece todos los botones de acción principal al estado por defecto ("Verificar")
         function resetActionButtonsToVerify() {
             // Sección 1
             const s1Btn = document.getElementById('s1-action-btn');
@@ -925,17 +1114,15 @@
             document.getElementById('s3-feedback').innerHTML = "";
         }
 
-        // --- SISTEMA DE AUDIO INTELIGENTE (Web Speech API o Gemini TTS con Precarga) ---
+        // --- SISTEMA DE AUDIO CON GOOGLE OAUTH ---
 
-        // Función de precarga en segundo plano
         async function triggerPrefetch() {
-            if (!geminiApiKey) return; // Solo precargar si hay llave de API guardada
+            // Validar si el estudiante ha iniciado sesión con Google antes de precargar
+            if (!googleAccessToken || Date.now() >= googleTokenExpiry) return;
 
-            // Obtener las frases correspondientes de la pestaña activa
             let sentencesToPrefetch = [];
 
             if (activeTab === 'tab1') {
-                // Precargar el actual y los siguientes 2 ejercicios de la Sección 1
                 for (let i = 0; i < 3; i++) {
                     let index = currentS1Index + i;
                     if (index < s1Exercises.length) {
@@ -944,7 +1131,6 @@
                     }
                 }
             } else if (activeTab === 'tab2') {
-                // Precargar el actual y los siguientes 2 ejercicios de la Sección 2 (Shadowing)
                 for (let i = 0; i < 3; i++) {
                     let index = currentS2Index + i;
                     if (index < s2Exercises.length) {
@@ -953,7 +1139,6 @@
                 }
             }
 
-            // Realizar la precarga asíncrona de manera secuencial sin bloquear la UI
             for (const text of sentencesToPrefetch) {
                 if (!audioCache[text]) {
                     prefetchAudio(text);
@@ -961,7 +1146,6 @@
             }
         }
 
-        // Petición silenciosa a la API para almacenar en caché
         async function prefetchAudio(text) {
             try {
                 const base64 = await getGeminiTTS(text, preferredVoice);
@@ -973,21 +1157,19 @@
             }
         }
 
-        // Reproducir audio con latencia cero
         async function speakSentence(text) {
-            if (geminiApiKey) {
-                // 1. Revisar si ya está en la caché en memoria para reproducción instantánea
+            const hasOauth = (googleAccessToken && Date.now() < googleTokenExpiry);
+
+            if (hasOauth) {
                 if (audioCache[text]) {
                     playAudioFromPCM16Base64(audioCache[text]);
                     return;
                 }
 
-                // 2. Si no estaba precargado, se descarga asíncronamente
                 try {
                     showToast("Generando audio con Gemini TTS...", "sparkles", "text-purple-500");
                     const audioBase64 = await getGeminiTTS(text, preferredVoice);
                     if (audioBase64) {
-                        // Guardar en caché para futuras reproducciones
                         audioCache[text] = audioBase64;
                         playAudioFromPCM16Base64(audioBase64);
                     } else {
@@ -998,19 +1180,16 @@
                     speakWithWebSpeech(text);
                 }
             } else {
-                // Utilizar Web Speech API local del navegador
                 speakWithWebSpeech(text);
             }
         }
 
         function speakWithWebSpeech(text) {
             if ('speechSynthesis' in window) {
-                // Cancelar cualquier discurso en progreso
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'en-US';
                 
-                // Intentar asignar una voz de Google nativa si está disponible
                 const voices = window.speechSynthesis.getVoices();
                 const googleVoice = voices.find(voice => voice.name.includes('Google US English') || voice.lang === 'en-US');
                 if (googleVoice) {
@@ -1023,9 +1202,15 @@
             }
         }
 
-        // Llamar a la API de Gemini para TTS (gemini-2.5-flash-preview-tts)
+        // Llamar a la API de Gemini para TTS con cabecera de autenticación OAuth Bearer Token
         async function getGeminiTTS(text, voice) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiApiKey}`;
+            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent";
+            const headers = { 'Content-Type': 'application/json' };
+
+            if (Date.now() >= googleTokenExpiry) {
+                throw new Error("Sesión de Google expirada.");
+            }
+            headers['Authorization'] = `Bearer ${googleAccessToken}`;
             
             const payload = {
                 contents: [{
@@ -1043,14 +1228,13 @@
                 }
             };
 
-            // Implementando política de reintentos con retraso exponencial simple
             let retries = 3;
             let delay = 1000;
             while (retries > 0) {
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(payload)
                     });
                     
@@ -1059,7 +1243,7 @@
                     const data = await response.json();
                     const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
                     if (audioPart && audioPart.inlineData.data) {
-                        return audioPart.inlineData.data; // Base64 del audio L16 PCM
+                        return audioPart.inlineData.data;
                     }
                     throw new Error("No se encontró parte de audio en el JSON.");
                 } catch (err) {
@@ -1083,36 +1267,22 @@
                     bytes[i] = binaryString.charCodeAt(i);
                 }
                 
-                // Formateamos como un archivo WAV reproducible directamente por el navegador (24kHz, 16 bits, Mono por defecto de Gemini)
                 const sampleRate = 24000; 
                 const wavHeader = new ArrayBuffer(44);
                 const view = new DataView(wavHeader);
                 
-                /* RIFF identifier */
                 writeString(view, 0, 'RIFF');
-                /* file length */
                 view.setUint32(4, 36 + bytes.length, true);
-                /* RIFF type */
                 writeString(view, 8, 'WAVE');
-                /* format chunk identifier */
                 writeString(view, 12, 'fmt ');
-                /* format chunk length */
                 view.setUint32(16, 16, true);
-                /* sample format (raw) */
                 view.setUint16(20, 1, true);
-                /* channel count */
                 view.setUint16(22, 1, true);
-                /* sample rate */
                 view.setUint32(24, sampleRate, true);
-                /* byte rate (sample rate * block align) */
                 view.setUint32(28, sampleRate * 2, true);
-                /* block align (channel count * bytes per sample) */
                 view.setUint16(32, 2, true);
-                /* bits per sample */
                 view.setUint16(34, 16, true);
-                /* data chunk identifier */
                 writeString(view, 36, 'data');
-                /* data chunk length */
                 view.setUint32(40, bytes.length, true);
                 
                 const blob = new Blob([wavHeader, bytes], { type: 'audio/wav' });
@@ -1157,10 +1327,10 @@
                 recognition.onerror = function(event) {
                     if (event.error === 'no-speech') {
                         console.warn("Speech recognition: No se detectó voz.");
-                        showToast("No se detectó voz. Por favor, asegúrate de hablar cerca de tu micrófono.", "mic-off", "text-amber-500");
+                        showToast("No se detectó voz. Asegúrate de hablar cerca de tu micrófono.", "mic-off", "text-amber-500");
                     } else {
                         console.error("Error en reconocimiento:", event.error);
-                        showToast("No se pudo iniciar el dictado. Revisa los permisos de micrófono.", "mic-off", "text-red-500");
+                        showToast("Revisa los permisos de micrófono.", "mic-off", "text-red-500");
                     }
                     stopAllRecordingsUI();
                 };
@@ -1225,19 +1395,16 @@
 
         function stopAllRecordingsUI() {
             isRecording = false;
-            // Pestaña 1
             const micS1 = document.getElementById('mic-s1-input');
             if (micS1) micS1.className = "w-5 h-5";
             const statS1 = document.getElementById('dictation-status-s1-input');
             if (statS1) statS1.classList.add('hidden');
 
-            // Pestaña 3
             const micS3 = document.getElementById('mic-s3-input');
             if (micS3) micS3.className = "w-5 h-5";
             const statS3 = document.getElementById('dictation-status-s3-input');
             if (statS3) statS3.classList.add('hidden');
 
-            // Pestaña 2
             const micShadow = document.getElementById('mic-shadow');
             if (micShadow) micShadow.className = "w-4.5 h-4.5";
             const btnShadowText = document.getElementById('btn-shadow-text');
@@ -1246,20 +1413,15 @@
             if (statShadow) statShadow.classList.add('hidden');
         }
 
-        // Análisis del Shadowing con algoritmo de similitud por tokens
         function processShadowingResult(userText) {
             const originalText = s2Exercises[currentS2Index].text;
-            
-            // Limpieza básica
             const clean = str => str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
             const cleanUser = clean(userText);
             const cleanOriginal = clean(originalText);
 
-            // Calcular similitud aproximada
             const score = calculateStringSimilarity(cleanOriginal, cleanUser);
             const roundedScore = Math.round(score * 100);
 
-            // Mostrar el bloque de análisis
             document.getElementById('shadowing-analysis-box').classList.remove('hidden');
             document.getElementById('user-said-text').innerText = `"${userText}"`;
             document.getElementById('pronunciation-score').innerText = `${roundedScore}%`;
@@ -1270,7 +1432,6 @@
                 feedbackMsg = "¡Increíble! Tu pronunciación y entonación son dignas de un nativo. ¡Excelente trabajo!";
                 document.getElementById('pronunciation-score').className = "text-lg font-black text-emerald-500";
                 document.getElementById('score-bar').className = "h-full bg-emerald-500 transition-all";
-                // Autocompletar y transformar botón de Shadowing automáticamente
                 markShadowingStepCompleted(true);
             } else if (roundedScore >= 60) {
                 feedbackMsg = "¡Buen intento! Se entiende bastante bien, pero puedes ajustar un poco más la pronunciación de las palabras individuales. Inténtalo de nuevo.";
@@ -1285,7 +1446,6 @@
             document.getElementById('pronunciation-feedback-text').innerText = feedbackMsg;
         }
 
-        // Similitud Jaccard simple basada en tokens (palabras)
         function calculateStringSimilarity(str1, str2) {
             const words1 = str1.split(/\s+/);
             const words2 = str2.split(/\s+/);
@@ -1300,7 +1460,7 @@
 
         // --- VERIFICADORES DE RESPUESTA ---
 
-        // Sección 1 (Con validación de Oración Completa y transformación del botón)
+        // Sección 1
         function checkSection1Answer() {
             const val = document.getElementById('s1-input').value.trim();
             const data = s1Exercises[currentS1Index];
@@ -1311,7 +1471,6 @@
                 return;
             }
 
-            // Normalizador general para mitigar problemas con contracciones, puntuación y espacios
             const clean = str => str.toLowerCase()
                 .replace(/is not/g, "isn't")
                 .replace(/are not/g, "aren't")
@@ -1322,11 +1481,9 @@
             const userCleaned = clean(val);
             const solutionCleaned = clean(data.solution);
             
-            // Reconstruir la oración correcta esperada para comparar
             const fullCorrectSentence = data.prompt.replace("___", data.solution);
             const fullCleaned = clean(fullCorrectSentence);
 
-            // Es correcto si coincide con la respuesta corta O con la oración completa
             const isCorrect = (userCleaned === solutionCleaned) || (userCleaned === fullCleaned);
 
             feedbackEl.classList.remove('hidden');
@@ -1342,15 +1499,12 @@
                         </div>
                     </div>
                 `;
-                // Actualizar interfaz interactiva del espacio en blanco
                 document.getElementById('s1-blank').innerText = data.solution;
                 document.getElementById('s1-blank').className = "text-emerald-500 px-4 py-1 font-extrabold";
 
-                // Guardar progreso
                 progress.tab1[currentS1Index] = true;
                 saveProgressToStorage();
 
-                // TRANSFORMAR BOTÓN EN "SIGUIENTE EJERCICIO"
                 const s1Btn = document.getElementById('s1-action-btn');
                 if (s1Btn) {
                     s1Btn.onclick = nextExercise;
@@ -1401,7 +1555,6 @@
                 </div>
             `;
 
-            // TRANSFORMAR EL BOTÓN DE ACCIÓN EN "SIGUIENTE EJERCICIO"
             const s2Btn = document.getElementById('s2-action-btn');
             if (s2Btn) {
                 s2Btn.onclick = nextExercise;
@@ -1423,7 +1576,6 @@
                 return;
             }
 
-            // Normalización de signos de puntuación y espacios
             const cleanedInput = val.replace(/[?¿]/g, "").trim();
             const cleanedSolution = data.solution.toLowerCase().replace(/[?¿]/g, "").trim();
 
@@ -1445,7 +1597,6 @@
                 progress.tab3[currentS3Index] = true;
                 saveProgressToStorage();
 
-                // TRANSFORMAR EL BOTÓN DE ACCIÓN EN "SIGUIENTE EJERCICIO"
                 const s3Btn = document.getElementById('s3-action-btn');
                 if (s3Btn) {
                     s3Btn.onclick = nextExercise;
@@ -1474,7 +1625,6 @@
             showToast("Pregunta autocompletada", "info", "text-purple-500");
         }
 
-        // Comparador inteligente que ignora diferencias cosméticas de contracciones
         function compareAnswers(a, b) {
             const clean = str => str.toLowerCase()
                 .replace(/is not/g, "isn't")
