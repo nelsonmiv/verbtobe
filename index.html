@@ -16,6 +16,7 @@
                         darkCard: '#1e293b',
                         accentBlue: '#3b82f6',
                         accentGreen: '#10b981',
+                        accentPurple: '#a855f7',
                     },
                     keyframes: {
                         fadeIn: {
@@ -61,17 +62,23 @@
             
             <!-- CONTROLES GLOBALES -->
             <div class="flex flex-wrap items-center gap-3">
+                <!-- Dashboard de Profesor (Ver Progreso de Alumnos) -->
+                <button onclick="toggleTeacherModal()" id="btn-teacher-dashboard" class="hidden flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-lg text-sm font-semibold transition-all">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Panel de Control</span>
+                </button>
+
                 <!-- Configuración Gemini API / Google OAuth -->
                 <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400 animate-spin-slow"></i>
-                    <span>Gemini TTS</span>
+                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                    <span>Configurar Gemini</span>
                     <span id="gemini-badge" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                 </button>
 
                 <!-- Guardado en la nube / Local info -->
-                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold">
+                <div id="cloud-sync-indicator" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700">
                     <i data-lucide="database" class="w-3.5 h-3.5"></i>
-                    <span>Guardado: Auto Local</span>
+                    <span id="sync-status-text">Guardado Local</span>
                 </div>
 
                 <!-- Botón Modo Oscuro -->
@@ -351,7 +358,7 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN CON GOOGLE OAUTH & TROUBLESHOOTER -->
+    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
         <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in">
             <div class="flex justify-between items-start">
@@ -364,111 +371,131 @@
                 </button>
             </div>
 
-            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Utiliza la síntesis de voz de alta fidelidad <strong>Gemini TTS</strong> conectando tu cuenta. Las peticiones correrán de forma segura bajo tu propia cuenta de Google, consumiendo únicamente tus cuotas de estudiante gratuitas.
-            </p>
-
-            <!-- TABS DE CONFIGURACIÓN / AYUDA DE REDIRECCIONAMIENTO -->
-            <div class="flex border-b border-slate-200 dark:border-slate-800">
-                <button onclick="switchModalTab('settings')" id="modal-tab-settings" class="flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500 transition-all">
-                    Configuración
-                </button>
-                <button onclick="switchModalTab('help')" id="modal-tab-help" class="flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300 transition-all">
-                    ¿Error de Redirección / OAuth?
-                </button>
-            </div>
-
-            <!-- PANEL DE CONFIGURACIÓN DIRECTA -->
-            <div id="modal-panel-settings" class="space-y-4">
-                <!-- Tarjeta informativa de Google -->
-                <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                    <p class="text-xs text-blue-800 dark:text-blue-300">
-                        Inicia sesión con tu correo escolar o personal. Tus credenciales de acceso están protegidas por el protocolo seguro de Google Identity.
-                    </p>
+            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE (OAUTH SIMPLIFICADO) -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] font-bold">1</span>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identifícate como Alumno</h4>
                 </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Inicia sesión de forma segura para cargar tu nombre, guardar tu progreso automáticamente en la nube y sincronizar con tu profesor.
+                </p>
 
-                <!-- ESTADO DEL PERFIL CONECTADO (Inyectado dinámicamente si hay sesión) -->
-                <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 animate-fade-in">
-                    <img id="oauth-profile-img" src="" class="w-10 h-10 rounded-full border border-purple-400 object-cover" alt="Perfil">
-                    <div class="overflow-hidden">
-                        <p id="oauth-profile-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Cargando...</p>
-                        <p id="oauth-profile-email" class="text-[10px] text-slate-400 truncate">Estudiante</p>
-                    </div>
-                </div>
-
-                <!-- BOTON DE CONECTAR CON GOOGLE -->
-                <div class="flex flex-col items-center justify-center py-1 space-y-2">
-                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-[0.98]">
-                        <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <!-- BOTON DE CONECTAR CON GOOGLE (OAuth Limpio sin scope de Gemini) -->
+                <div class="pt-1">
+                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-xs transition-all shadow-sm">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.57-5.17 3.57-8.73z"/>
                             <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.13 0-5.78-2.11-6.73-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/>
                             <path fill="#FBBC05" d="M5.27 14.24A7.16 7.16 0 0 1 5 12c0-.79.13-1.57.38-2.31V6.54H1.21A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.21 5.46l4.06-3.22z"/>
                             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.18 2.12 1.21 5.7l4.06 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
                         </svg>
-                        <span id="oauth-btn-text">Vincular Cuenta Google</span>
+                        <span id="oauth-btn-text">Iniciar Sesión de Alumno</span>
                     </button>
-                    <!-- INDICADOR DE EXPIRACION -->
-                    <p id="oauth-status" class="text-xs text-slate-400 italic text-center hidden"></p>
-                </div>
-
-                <!-- SELECCIONADOR DE VOZ COMUN -->
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
-                    <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
-                        <option value="Kore">Kore (Voz Clara Estándar)</option>
-                        <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
-                        <option value="Charon">Charon (Tono Profundo)</option>
-                        <option value="Leda">Leda (Femenino Suave)</option>
-                        <option value="Puck">Puck (Juvenil)</option>
-                    </select>
+                    <!-- ESTADO DEL PERFIL CONECTADO -->
+                    <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 mt-2">
+                        <img id="oauth-profile-img" src="" class="w-8 h-8 rounded-full border border-purple-400 object-cover" alt="Perfil">
+                        <div class="overflow-hidden">
+                            <p id="oauth-profile-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Estudiante</p>
+                            <p id="oauth-profile-email" class="text-[9px] text-slate-400 truncate">Sincronizado</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- CONTENEDOR 2: PESTAÑA DE DIAGNÓSTICO EN TIEMPO REAL -->
-            <div id="modal-panel-help" class="hidden space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                <div class="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-                    <h4 class="text-xs font-bold text-rose-500 flex items-center gap-1.5">
-                        <i data-lucide="alert-circle" class="w-4 h-4"></i> ¿Error de redirección de Google?
-                    </h4>
-                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-semibold">
-                        Para que Google Cloud autorice el login, debes dar de alta la URL de origen exacta y el redireccionamiento dentro de tus credenciales OAuth 2.0.
-                    </p>
+            <!-- PASO 2: OBTENER API KEY EN GOOGLE AI STUDIO (EXPLICACIÓN SENCILLA) -->
+            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold">2</span>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Consigue tu Clave API (100% Gratis)</h4>
+                </div>
+                
+                <div class="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-2 text-xs">
+                    <p class="font-semibold text-purple-700 dark:text-purple-300">Sigue estos rápidos pasos para habilitar el sintetizador de voz de la IA:</p>
+                    <ol class="list-decimal pl-4 space-y-1.5 text-slate-600 dark:text-slate-300">
+                        <li>Entra a <a href="https://aistudio.google.com/" target="_blank" class="text-blue-500 font-bold hover:underline inline-flex items-center gap-0.5">Google AI Studio <i data-lucide="external-link" class="w-3 h-3"></i></a> e inicia sesión con tu correo de Google.</li>
+                        <li>Haz clic en el botón azul de arriba a la izquierda que dice <strong>"Get API key"</strong> (Obtener clave API).</li>
+                        <li>Haz clic en <strong>"Create API key"</strong>, copia el código que empieza con <code class="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded font-mono">AIzaSy...</code> y pégalo abajo.</li>
+                    </ol>
                 </div>
 
-                <!-- HERRAMIENTA DE DIAGNÓSTICO EN TIEMPO REAL -->
-                <div class="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-xl space-y-2">
-                    <span class="text-xs font-bold text-purple-400 block uppercase tracking-wider">Tu Origen Actual Detectado:</span>
-                    <div id="diagnostic-origin-container" class="bg-slate-900/60 p-2.5 rounded font-mono text-[11px] select-all border border-slate-700/50 break-all text-white">
-                        Obteniendo origen...
-                    </div>
-                    <div id="diagnostic-advice" class="text-[10px] text-slate-400">
-                        <!-- Inyectado dinámicamente -->
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h5 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Cómo solucionarlo rápido:</h5>
-                    
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
-                        <p class="font-bold text-purple-400">1. Abre tu consola Cloud de Google</p>
-                        <p class="text-[11px] text-slate-500">Ve a tu sección de Credenciales de OAuth 2.0 en Google Developer Console.</p>
-                    </div>
-
-                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
-                        <p class="font-bold text-purple-400">2. Copia el Origen de arriba</p>
-                        <p class="text-[11px] text-slate-500 font-medium">Agrégalo exactamente igual en la sección de "Orígenes de JavaScript autorizados" y "URIs de redireccionamiento autorizadas" incluyendo la barra final si es necesario.</p>
+                <!-- CAMPO CLAVE API -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-400">Pegar Clave API de Gemini</label>
+                    <div class="relative">
+                        <input type="password" id="gemini-api-key-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none font-mono" placeholder="AIzaSy...">
+                        <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300" title="Mostrar/Ocultar">
+                            <i id="key-visibility-icon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- SELECCIONADOR DE VOZ COMUN -->
+            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
+                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                    <option value="Kore">Kore (Voz Clara Estándar)</option>
+                    <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
+                    <option value="Charon">Charon (Tono Profundo)</option>
+                    <option value="Leda">Leda (Femenino Suave)</option>
+                    <option value="Puck">Puck (Juvenil)</option>
+                </select>
             </div>
 
             <!-- BOTONES DE ACCIÓN GENERAL -->
             <div class="flex gap-3 pt-2">
-                <button onclick="saveGeminiSettings()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all shadow-md">
+                <button onclick="saveGeminiSettings()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition-all shadow-md">
                     Guardar Configuración
                 </button>
-                <button onclick="clearGeminiSettings()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm transition-all">
-                    Cerrar Sesión
+                <button onclick="clearGeminiSettings()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-xs transition-all">
+                    Restablecer
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DASHBOARD DE PROFESOR (VISTA DE PROGRESO DE TODOS LOS ALUMNOS) -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-4xl w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="users" class="w-6 h-6 text-purple-500"></i>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Panel de Control del Profesor</h3>
+                        <p class="text-xs text-slate-400">Sigue en tiempo real el progreso de todos tus alumnos conectados</p>
+                    </div>
+                </div>
+                <button onclick="toggleTeacherModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- TABLA DE ALUMNOS -->
+            <div class="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-900 text-slate-500 text-xs font-bold uppercase border-b border-slate-200 dark:border-slate-800">
+                            <th class="p-4">Estudiante</th>
+                            <th class="p-4 text-center">Gramática (S1)</th>
+                            <th class="p-4 text-center">Pronunciación (S2)</th>
+                            <th class="p-4 text-center">Inversión (S3)</th>
+                            <th class="p-4">Total</th>
+                            <th class="p-4">Última Actividad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-progress-table-body" class="text-xs divide-y divide-slate-200 dark:divide-slate-800">
+                        <!-- Cargar dinámicamente desde Firestore -->
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <i data-lucide="loader" class="w-6 h-6 animate-spin text-purple-500"></i>
+                                    <span>Conectando con la base de datos de estudiantes...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -586,7 +613,7 @@
             { id: 32, text: "My dog is running after a ball.", translation: "Mi perro está corriendo tras una pelota." },
             { id: 33, text: "They are not eating fast food.", translation: "Ellos no están comiendo comida rápida." },
             { id: 34, text: "I am cleaning my room now.", translation: "Estoy limpiando mi habitación ahora." },
-            { id: 35, text: "He is painting a picture.", translation: "Él está painting un cuadro." },
+            { id: 35, text: "He is painting a picture.", translation: "Él está pintando un cuadro." },
             { id: 36, text: "The computer is working perfectly.", translation: "La computadora está funcionando perfectamente." },
             { id: 37, text: "You are speaking English well.", translation: "Estás hablando inglés muy bien." },
             { id: 38, text: "We are not watching the game.", translation: "Nosotros no estamos viendo el partido." },
@@ -659,16 +686,59 @@
         ];
     </script>
 
-    <!-- MOTOR LÓGICO DE LA APP -->
-    <script>
-        // Adaptador seguro para almacenamiento local en el navegador (resiliente a bloqueos de iframe/privacidad)
+    <!-- MOTOR PRINCIPAL CON INTEGRACIÓN DE BASE DE DATOS FIRESTORE (SINCRONIZACIÓN) -->
+    <script type="module">
+        // Configuración inyectada y cargadores de módulos
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'english-learning-portal';
+        let db = null;
+        let auth = null;
+        let firebaseUser = null;
+
+        // Intentar conectar con la base de datos Firestore en la nube de Canvas
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                const { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Autenticación asíncrona silenciosa requerida antes de hacer consultas (Regla 3)
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    firebaseUser = (await signInWithCustomToken(auth, token)).user;
+                } else {
+                    firebaseUser = (await signInAnonymously(auth)).user;
+                }
+                
+                console.log("Firebase conectado de manera segura con UID:", firebaseUser.uid);
+                
+                // Activar Dashboard de Profesor si hay conexión a la base de datos
+                document.getElementById('btn-teacher-dashboard').classList.remove('hidden');
+                
+                // Escuchar cambios de todos los alumnos en tiempo real para el Panel del Profesor (Regla 2 - Query Simple)
+                const progressCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_progress');
+                onSnapshot(progressCol, (snapshot) => {
+                    renderTeacherDashboard(snapshot);
+                }, (error) => {
+                    console.error("Fallo al sincronizar base de datos de alumnos:", error);
+                });
+
+            } catch (e) {
+                console.warn("Firebase no inicializado. Operando en modo de respaldo LocalStorage.", e);
+            }
+        }
+
+        // Adaptador seguro para almacenamiento local en el navegador (Para evitar fallas de iframe)
         const memoryStorage = {};
         const safeStorage = {
             getItem: function(key) {
                 try {
                     return localStorage.getItem(key);
                 } catch (e) {
-                    console.warn("Storage bloqueado, cargando memoria temporal.", e);
                     return memoryStorage[key] || null;
                 }
             },
@@ -676,7 +746,6 @@
                 try {
                     localStorage.setItem(key, value);
                 } catch (e) {
-                    console.warn("Storage bloqueado, escribiendo en memoria temporal.", e);
                     memoryStorage[key] = String(value);
                 }
             },
@@ -689,42 +758,30 @@
             }
         };
 
-        // Variables de estado
+        // Variables de estado global
         let activeTab = 'tab1';
         let currentS1Index = 0;
         let currentS2Index = 0;
         let currentS3Index = 0;
 
-        // Progreso guardado localmente
         let progress = {
             tab1: Array(50).fill(false),
             tab2: Array(50).fill(false),
             tab3: Array(50).fill(false)
         };
 
-        // Caché en memoria para audios pre-generados de Gemini TTS (Clave: Texto, Valor: Base64 PCM16)
         let audioCache = {};
-
-        // Métodos de autenticación y claves (Client ID de Google Cloud verificado)
         const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
         let googleAccessToken = '';
-        let googleTokenExpiry = 0; // Timestamp en ms
+        let googleTokenExpiry = 0;
+        let geminiApiKey = '';
         let preferredVoice = 'Kore';
-
-        // Almacenar perfil de Google del alumno
         let studentProfile = null;
-
-        // Callback pendiente para confirmación modal
         let onConfirmCallback = null;
-
-        // Cliente de tokens de Google Identity Services
-        let tokenClient;
-
-        // Reconocimiento de Voz nativo
-        let recognition;
+        let tokenClient = null;
+        let recognition = null;
         let isRecording = false;
 
-        // Inicialización de la aplicación
         window.onload = function() {
             lucide.createIcons();
             loadProgressFromStorage();
@@ -734,15 +791,12 @@
             loadExerciseData();
             initSpeechRecognition();
             initGoogleOAuthClient();
-            runDiagnostics();
         };
 
-        // Cambiar Modo de Luz / Oscuro
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
         }
 
-        // Cargar progreso utilizando el storage seguro
         function loadProgressFromStorage() {
             const saved = safeStorage.getItem('english_a1_progress');
             if (saved) {
@@ -754,13 +808,91 @@
             }
         }
 
-        // Guardar progreso utilizando el storage seguro
-        function saveProgressToStorage() {
+        // Guardar progreso y sincronizar instantáneamente en la nube
+        async function saveProgressToStorage() {
             safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
             updateProgressUI();
+
+            // Sincronización en la nube si hay sesión y base de datos activa (Regla 1 y 3)
+            if (db && studentProfile && firebaseUser) {
+                document.getElementById('sync-status-text').innerText = "Sincronizando...";
+                try {
+                    const safeEmailKey = studentProfile.email.replace(/[^a-zA-Z0-9]/g, "_");
+                    const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                    
+                    const progressDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'student_progress', safeEmailKey);
+                    await setDoc(progressDocRef, {
+                        email: studentProfile.email,
+                        name: studentProfile.name,
+                        picture: studentProfile.picture || '',
+                        progress: progress,
+                        last_updated: new Date().toISOString()
+                    });
+
+                    document.getElementById('cloud-sync-indicator').className = "flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold border border-emerald-500/30";
+                    document.getElementById('sync-status-text').innerText = "Guardado en Nube";
+                } catch (err) {
+                    console.error("Error sincronizando progreso en la nube:", err);
+                    document.getElementById('sync-status-text').innerText = "Guardado Local";
+                }
+            } else {
+                document.getElementById('cloud-sync-indicator').className = "flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700";
+                document.getElementById('sync-status-text').innerText = "Guardado Local";
+            }
         }
 
-        // Lanzar Modal de Confirmación Moderno (Reemplazo de confirm())
+        // Renderizar la tabla dinámica del profesor desde Firestore en tiempo real
+        function renderTeacherDashboard(snapshot) {
+            const tbody = document.getElementById('student-progress-table-body');
+            if (!tbody) return;
+
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Ningún estudiante se ha conectado todavía.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                if (!data.progress) return;
+
+                // Calcular totales
+                const s1 = data.progress.tab1 ? data.progress.tab1.filter(Boolean).length : 0;
+                const s2 = data.progress.tab2 ? data.progress.tab2.filter(Boolean).length : 0;
+                const s3 = data.progress.tab3 ? data.progress.tab3.filter(Boolean).length : 0;
+                const total = s1 + s2 + s3;
+                const percentage = Math.round((total / 150) * 100);
+
+                const date = data.last_updated ? new Date(data.last_updated).toLocaleString() : 'N/A';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4 flex items-center gap-2.5">
+                        <img src="${data.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=' + data.name[0]}" class="w-8 h-8 rounded-full border border-purple-500 object-cover" onerror="this.src='https://placehold.co/40x40/3b82f6/ffffff?text=U'">
+                        <div>
+                            <p class="font-bold text-slate-900 dark:text-white">${data.name}</p>
+                            <p class="text-[10px] text-slate-400">${data.email}</p>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center font-semibold text-blue-500">${s1} / 50</td>
+                    <td class="p-4 text-center font-semibold text-emerald-500">${s2} / 50</td>
+                    <td class="p-4 text-center font-semibold text-purple-500">${s3} / 50</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold shrink-0">${percentage}%</span>
+                            <div class="w-20 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-purple-500 h-full" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-slate-400 text-[10px]">${date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
         function requestResetAllProgress() {
             showConfirmModal(
                 "¿Reiniciar Progreso?", 
@@ -779,56 +911,6 @@
             );
         }
 
-        // Lógica de diagnóstico de redireccionamiento y orígenes autorizados
-        function runDiagnostics() {
-            const originContainer = document.getElementById('diagnostic-origin-container');
-            const adviceContainer = document.getElementById('diagnostic-advice');
-            if (!originContainer) return;
-
-            const currentOrigin = window.location.origin;
-            originContainer.innerText = currentOrigin;
-
-            if (currentOrigin.startsWith('file://')) {
-                adviceContainer.innerHTML = `
-                    <span class="text-rose-500 font-bold">⚠️ ALERTA CRÍTICA:</span> Estás abriendo el HTML de forma directa en tu disco duro. Google OAuth <strong>no permite</strong> solicitudes desde <code class="bg-slate-200 dark:bg-slate-800 text-rose-400 px-1 py-0.5 rounded font-mono">file://</code>. Debes correr tu proyecto sobre un servidor local (como Live Server en VS Code) o subirlo a GitHub Pages.
-                `;
-            } else if (currentOrigin.includes('github.io')) {
-                adviceContainer.innerHTML = `
-                    <span class="text-emerald-400 font-bold">✓ GitHub Pages activo:</span> Asegúrate de que hayas agregado <code class="bg-slate-200 dark:bg-slate-800 text-emerald-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> exactamente así, sin barra diagonal final, a tus orígenes en Google Cloud Platform.
-                `;
-            } else if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
-                adviceContainer.innerHTML = `
-                    <span class="text-blue-400 font-bold">✓ Entorno Local:</span> Todo listo para pruebas locales. Solo recuerda agregar <code class="bg-slate-200 dark:bg-slate-800 text-blue-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> a tus credenciales de cliente OAuth.
-                `;
-            } else {
-                adviceContainer.innerHTML = `
-                    <span class="text-amber-400 font-bold">ⓘ Servidor Remoto:</span> Asegúrate de tener registrado <code class="bg-slate-200 dark:bg-slate-800 text-amber-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> en tu Consola de Desarrolladores de Google.
-                `;
-            }
-        }
-
-        // Alternar paneles de configuración y diagnóstico en el modal de Gemini
-        function switchModalTab(tab) {
-            const settingsBtn = document.getElementById('modal-tab-settings');
-            const helpBtn = document.getElementById('modal-tab-help');
-            const settingsPanel = document.getElementById('modal-panel-settings');
-            const helpPanel = document.getElementById('modal-panel-help');
-
-            if (tab === 'settings') {
-                settingsBtn.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500";
-                helpBtn.className = "flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300";
-                settingsPanel.classList.remove('hidden');
-                helpPanel.classList.add('hidden');
-            } else {
-                helpBtn.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500";
-                settingsBtn.className = "flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300";
-                settingsPanel.classList.add('hidden');
-                helpPanel.classList.remove('hidden');
-            }
-            lucide.createIcons();
-        }
-
-        // Lógica de Modales de confirmación Custom
         function showConfirmModal(title, description, onConfirm) {
             document.getElementById('confirm-title').innerText = title;
             document.getElementById('confirm-desc').innerText = description;
@@ -837,7 +919,6 @@
             const modal = document.getElementById('confirm-modal');
             modal.classList.remove('hidden');
             
-            // Vincular evento de confirmación única
             const confirmBtn = document.getElementById('confirm-btn-yes');
             confirmBtn.onclick = function() {
                 if (onConfirmCallback) onConfirmCallback();
@@ -850,12 +931,10 @@
             onConfirmCallback = null;
         }
 
-        // Vaciar la caché local de audios
         function clearAudioCache() {
             audioCache = {};
         }
 
-        // Actualizar interfaz del Progreso
         function updateProgressUI() {
             const s1Count = progress.tab1.filter(Boolean).length;
             const s2Count = progress.tab2.filter(Boolean).length;
@@ -878,12 +957,12 @@
             document.getElementById('global-percentage').innerText = `Progreso Total: ${totalPercentage}%`;
         }
 
-        // Configuración de Gemini utilizando el storage seguro
         function loadGeminiConfig() {
             const savedVoice = safeStorage.getItem('gemini_voice');
             const savedAccessToken = safeStorage.getItem('google_access_token');
             const savedExpiry = safeStorage.getItem('google_token_expiry');
             const savedProfile = safeStorage.getItem('google_student_profile');
+            const savedApiKey = safeStorage.getItem('gemini_api_key');
             
             if (savedAccessToken && savedExpiry) {
                 googleAccessToken = savedAccessToken;
@@ -903,45 +982,41 @@
                 document.getElementById('gemini-voice-select').value = savedVoice;
             }
 
+            if (savedApiKey) {
+                geminiApiKey = savedApiKey;
+                document.getElementById('gemini-api-key-input').value = savedApiKey;
+            }
+
             updateAuthBadgeUI();
         }
 
-        // Actualizar visualmente la insignia e indicador de OAuth de Google
+        // Actualizar visualmente la insignia e indicador de OAuth de Google y API Key
         function updateAuthBadgeUI() {
             const badge = document.getElementById('gemini-badge');
-            const oauthStatusText = document.getElementById('oauth-status');
             const oauthBtnText = document.getElementById('oauth-btn-text');
             const profileCard = document.getElementById('oauth-profile-card');
 
-            const now = Date.now();
-            if (googleAccessToken && now < googleTokenExpiry) {
-                // Estado Conectado Correctamente
-                badge.classList.remove('bg-red-500');
-                badge.classList.add('bg-emerald-500');
-                
-                const minLeft = Math.round((googleTokenExpiry - now) / 60000);
-                oauthStatusText.classList.remove('hidden');
-                oauthStatusText.innerHTML = `Sesión Google activa. Expira en ~${minLeft} min.`;
-                oauthStatusText.className = "text-xs text-emerald-500 font-semibold text-center mt-1";
-                oauthBtnText.innerText = "¡Cuenta Google Vinculada!";
+            const hasOauth = googleAccessToken && Date.now() < googleTokenExpiry;
+            const hasApiKey = !!geminiApiKey;
 
-                // Renderizar perfil de Google del estudiante
+            if (hasOauth && hasApiKey) {
+                badge.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            } else if (hasOauth || hasApiKey) {
+                badge.className = "w-2.5 h-2.5 rounded-full bg-yellow-500";
+            } else {
+                badge.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+            }
+
+            if (hasOauth) {
+                oauthBtnText.innerText = "¡Sincronizado con Google!";
                 if (studentProfile) {
                     profileCard.classList.remove('hidden');
-                    document.getElementById('oauth-profile-img').src = studentProfile.picture || '';
+                    document.getElementById('oauth-profile-img').src = studentProfile.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=U';
                     document.getElementById('oauth-profile-name').innerText = studentProfile.name || 'Estudiante';
-                    document.getElementById('oauth-profile-email').innerText = studentProfile.email || '';
-                } else {
-                    profileCard.classList.add('hidden');
+                    document.getElementById('oauth-profile-email').innerText = studentProfile.email || 'Sincronizado';
                 }
             } else {
-                // Estado Desconectado o Expirado
-                badge.classList.remove('bg-emerald-500');
-                badge.classList.add('bg-red-500');
-                oauthStatusText.classList.remove('hidden');
-                oauthStatusText.innerText = "No has vinculado tu cuenta de Google.";
-                oauthStatusText.className = "text-xs text-red-500 font-medium text-center mt-1";
-                oauthBtnText.innerText = "Vincular Cuenta Google";
+                oauthBtnText.innerText = "Iniciar Sesión de Alumno";
                 profileCard.classList.add('hidden');
             }
         }
@@ -952,11 +1027,18 @@
             if (!modal.classList.contains('hidden')) {
                 lucide.createIcons();
                 updateAuthBadgeUI();
-                runDiagnostics();
             }
         }
 
-        // Inicializar el cliente de Google Identity Services con los scopes correctos
+        function toggleTeacherModal() {
+            const modal = document.getElementById('teacher-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                lucide.createIcons();
+            }
+        }
+
+        // Inicializar el cliente de Google Identity Services con los scopes correctos (Sin el scope conflictivo)
         function initGoogleOAuthClient() {
             if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
                 setTimeout(initGoogleOAuthClient, 1000);
@@ -966,7 +1048,7 @@
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: googleClientId,
-                    scope: 'https://www.googleapis.com/auth/generative-language email profile openid',
+                    scope: 'email profile openid', // Solo scopes públicos necesarios, solucionando error 400
                     callback: (tokenResponse) => {
                         if (tokenResponse.error !== undefined) {
                             console.error("Error en Google Auth:", tokenResponse.error);
@@ -980,7 +1062,6 @@
                         safeStorage.setItem('google_access_token', googleAccessToken);
                         safeStorage.setItem('google_token_expiry', googleTokenExpiry);
                         
-                        // Obtener información de perfil directamente para una UI amigable
                         fetchStudentProfileInfo(googleAccessToken);
                     },
                 });
@@ -989,7 +1070,6 @@
             }
         }
 
-        // Descargar datos básicos del estudiante para desplegarlos en pantalla
         async function fetchStudentProfileInfo(token) {
             try {
                 const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -1009,11 +1089,11 @@
             } finally {
                 showToast("¡Cuenta Google vinculada correctamente!", "check", "text-emerald-500");
                 updateAuthBadgeUI();
+                saveProgressToStorage(); // Sincroniza al iniciar sesión
                 triggerPrefetch();
             }
         }
 
-        // Ejecutar flujo de Login con Google OAuth
         function loginWithGoogleOAuth() {
             if (!tokenClient) {
                 initGoogleOAuthClient();
@@ -1026,35 +1106,56 @@
             }
         }
 
-        // Guardar preferencias generales (como la voz preferida)
         function saveGeminiSettings() {
             const voice = document.getElementById('gemini-voice-select').value;
+            const apiKey = document.getElementById('gemini-api-key-input').value.trim();
+
             clearAudioCache();
             preferredVoice = voice;
             safeStorage.setItem('gemini_voice', voice);
 
+            geminiApiKey = apiKey;
+            safeStorage.setItem('gemini_api_key', apiKey);
+
             updateAuthBadgeUI();
             toggleGeminiModal();
+            showToast("Configuración guardada con éxito", "check", "text-emerald-500");
             triggerPrefetch();
         }
 
-        // Cerrar sesión y vaciar tokens guardados en el navegador
         function clearGeminiSettings() {
             googleAccessToken = '';
             googleTokenExpiry = 0;
             studentProfile = null;
+            geminiApiKey = '';
             
             safeStorage.removeItem('google_access_token');
             safeStorage.removeItem('google_token_expiry');
             safeStorage.removeItem('google_student_profile');
+            safeStorage.removeItem('gemini_api_key');
+            
+            document.getElementById('gemini-api-key-input').value = '';
             
             clearAudioCache();
             updateAuthBadgeUI();
-            showToast("Sesión de Google cerrada.", "info", "text-blue-500");
+            saveProgressToStorage(); // Actualizar estado de nube
+            showToast("Se han limpiado todas las configuraciones.", "info", "text-blue-500");
             toggleGeminiModal();
         }
 
-        // Cambiar entre pestañas
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('gemini-api-key-input');
+            const icon = document.getElementById('key-visibility-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
         function switchTab(tabId) {
             activeTab = tabId;
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
@@ -1073,7 +1174,6 @@
             loadExerciseData();
         }
 
-        // Construir selectores de ejercicio (1-50)
         function buildExerciseSelectors() {
             const selector = document.getElementById('exercise-selector');
             if (!selector) return;
@@ -1100,7 +1200,6 @@
             return currentS3Index;
         }
 
-        // Establece el índice del ejercicio de la sección activa
         function setActiveIndex(val) {
             if (activeTab === 'tab1') currentS1Index = val;
             else if (activeTab === 'tab2') currentS2Index = val;
@@ -1108,13 +1207,11 @@
             buildExerciseSelectors();
         }
 
-        // Navegar a un índice de ejercicio específico
         function jumpToExercise(val) {
             setActiveIndex(parseInt(val));
             loadExerciseData();
         }
 
-        // Avanzar al siguiente ejercicio
         function nextExercise() {
             let idx = getActiveIndex();
             if (idx < 49) {
@@ -1133,11 +1230,8 @@
             }
         }
 
-        // Cargar Datos del ejercicio activo
         function loadExerciseData() {
             const idx = getActiveIndex();
-            
-            // Limpiar feedbacks y respuestas previas
             hideAllFeedbacks();
             resetActionButtonsToVerify();
 
@@ -1148,7 +1242,6 @@
                 document.getElementById('s1-input').value = '';
                 document.getElementById('s1-input').focus();
 
-                // Actualizar insignia de tipo de oración (Afirmativa / Negativa)
                 const badge = document.getElementById('s1-type-badge');
                 if (data.type === 'Negativa') {
                     badge.className = "px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded-full text-xs font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900/30";
@@ -1173,7 +1266,6 @@
                 document.getElementById('s3-input').value = '';
                 document.getElementById('s3-input').focus();
 
-                // DETECCION DE PISTA DE "WH QUESTION" PARA EL ESTUDIANTE (REVERSE QUESTIONS)
                 const solutionLower = data.solution.toLowerCase().trim();
                 const whQuestions = ["what time", "how old", "what color", "where", "what", "why", "who", "how"];
                 let matchedWh = null;
@@ -1192,13 +1284,10 @@
                 }
             }
             lucide.createIcons();
-
-            // Disparar precarga inteligente
             triggerPrefetch();
         }
 
         function resetActionButtonsToVerify() {
-            // Sección 1
             const s1Btn = document.getElementById('s1-action-btn');
             if (s1Btn) {
                 s1Btn.onclick = checkSection1Answer;
@@ -1206,7 +1295,6 @@
                 s1Btn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i><span>Verificar Respuesta</span>`;
             }
 
-            // Sección 2
             const s2Btn = document.getElementById('s2-action-btn');
             if (s2Btn) {
                 s2Btn.onclick = completeShadowing;
@@ -1214,7 +1302,6 @@
                 s2Btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i><span>Marcar como Completado</span>`;
             }
 
-            // Sección 3
             const s3Btn = document.getElementById('s3-action-btn');
             if (s3Btn) {
                 s3Btn.onclick = checkSection3Answer;
@@ -1232,11 +1319,8 @@
             document.getElementById('s3-feedback').innerHTML = "";
         }
 
-        // --- SISTEMA DE AUDIO CON GOOGLE OAUTH ---
-
         async function triggerPrefetch() {
-            // Validar si el estudiante ha iniciado sesión con Google antes de precargar
-            if (!googleAccessToken || Date.now() >= googleTokenExpiry) return;
+            if (!geminiApiKey) return;
 
             let sentencesToPrefetch = [];
 
@@ -1276,9 +1360,7 @@
         }
 
         async function speakSentence(text) {
-            const hasOauth = (googleAccessToken && Date.now() < googleTokenExpiry);
-
-            if (hasOauth) {
+            if (geminiApiKey) {
                 if (audioCache[text]) {
                     playAudioFromPCM16Base64(audioCache[text]);
                     return;
@@ -1320,15 +1402,9 @@
             }
         }
 
-        // Llamar a la API de Gemini para TTS con cabecera de autenticación OAuth Bearer Token
         async function getGeminiTTS(text, voice) {
-            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiApiKey}`;
             const headers = { 'Content-Type': 'application/json' };
-
-            if (Date.now() >= googleTokenExpiry) {
-                throw new Error("Sesión de Google expirada.");
-            }
-            headers['Authorization'] = `Bearer ${googleAccessToken}`;
             
             const payload = {
                 contents: [{
@@ -1366,16 +1442,13 @@
                     throw new Error("No se encontró parte de audio en el JSON.");
                 } catch (err) {
                     retries--;
-                    if (retries === 0) {
-                        throw err;
-                    }
+                    if (retries === 0) throw err;
                     await new Promise(res => setTimeout(res, delay));
                     delay *= 2;
                 }
             }
         }
 
-        // Convertir PCM16 a WAV y reproducirlo
         function playAudioFromPCM16Base64(base64Data) {
             try {
                 const binaryString = atob(base64Data);
@@ -1419,7 +1492,6 @@
             }
         }
 
-        // Activadores de altavoz
         function speakCurrentSentence() {
             const data = s1Exercises[currentS1Index];
             const fullSentence = data.prompt.replace("___", data.solution);
@@ -1430,8 +1502,6 @@
             const data = s2Exercises[currentS2Index];
             speakSentence(data.text);
         }
-
-        // --- SISTEMA DE DICTADO (Speech-to-Text) ---
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1444,11 +1514,9 @@
 
                 recognition.onerror = function(event) {
                     if (event.error === 'no-speech') {
-                        console.warn("Speech recognition: No se detectó voz.");
-                        showToast("No se detectó voz. Asegúrate de hablar cerca de tu micrófono.", "mic-off", "text-amber-500");
+                        showToast("No se detectó voz. Habla fuerte y claro cerca de tu micrófono.", "mic-off", "text-amber-500");
                     } else {
-                        console.error("Error en reconocimiento:", event.error);
-                        showToast("Revisa los permisos de micrófono.", "mic-off", "text-red-500");
+                        showToast("Permiso de micrófono denegado.", "mic-off", "text-red-500");
                     }
                     stopAllRecordingsUI();
                 };
@@ -1456,14 +1524,12 @@
                 recognition.onend = function() {
                     stopAllRecordingsUI();
                 };
-            } else {
-                console.warn("Reconocimiento de voz no soportado en este navegador.");
             }
         }
 
         function startListening(targetInputId) {
             if (!recognition) {
-                showToast("Este navegador no soporta reconocimiento de voz (Usa Chrome o Edge).", "alert-triangle", "text-yellow-500");
+                showToast("Navegador no soportado para dictado de voz. Usa Chrome o Edge.", "alert-triangle", "text-yellow-500");
                 return;
             }
 
@@ -1486,7 +1552,6 @@
             recognition.start();
         }
 
-        // Grabación específica para Shadowing
         function startShadowingRecording() {
             if (!recognition) {
                 showToast("Tu navegador no soporta dictado de voz.", "alert-triangle", "text-yellow-500");
@@ -1556,7 +1621,7 @@
                 document.getElementById('pronunciation-score').className = "text-lg font-black text-yellow-500";
                 document.getElementById('score-bar').className = "h-full bg-yellow-500 transition-all";
             } else {
-                feedbackMsg = "Parece que algunas palabras no coincidieron bien. Intenta escuchar nuevamente la oración de ejemplo y repite prestando atención a las pausas.";
+                feedbackMsg = "Parece que algunas palabras no coincidieron bien. Intenta escuchar nuevamente la oración de ejemplo y repite.";
                 document.getElementById('pronunciation-score').className = "text-lg font-black text-red-500";
                 document.getElementById('score-bar').className = "h-full bg-red-500 transition-all";
             }
@@ -1576,9 +1641,6 @@
             return intersection.size / union.size;
         }
 
-        // --- VERIFICADORES DE RESPUESTA ---
-
-        // Sección 1
         function checkSection1Answer() {
             const val = document.getElementById('s1-input').value.trim();
             const data = s1Exercises[currentS1Index];
@@ -1637,10 +1699,11 @@
                         <div>
                             <p class="font-bold text-lg">Respuesta Incorrecta</p>
                             <p class="text-sm mt-1">Tu respuesta: <span class="line-through">"${val}"</span>. Inténtalo de nuevo o revisa las reglas gramaticales básicas de A1.</p>
-                            <button onclick="revealSection1Answer()" class="mt-2 text-xs font-bold text-blue-500 hover:underline">Revelar respuesta correcta</button>
+                            <button id="btn-reveal-s1" class="mt-2 text-xs font-bold text-blue-500 hover:underline">Revelar respuesta correcta</button>
                         </div>
                     </div>
                 `;
+                document.getElementById('btn-reveal-s1').onclick = revealSection1Answer;
             }
             lucide.createIcons();
         }
@@ -1648,10 +1711,9 @@
         function revealSection1Answer() {
             const data = s1Exercises[currentS1Index];
             document.getElementById('s1-input').value = data.solution;
-            showToast("Respuesta con contracción autocompletada", "info", "text-blue-500");
+            showToast("Respuesta cargada", "info", "text-blue-500");
         }
 
-        // Sección 2: Marcado de Shadowing
         function completeShadowing() {
             markShadowingStepCompleted(false);
         }
@@ -1683,7 +1745,6 @@
             lucide.createIcons();
         }
 
-        // Sección 3: Reverse Questions
         function checkSection3Answer() {
             const val = document.getElementById('s3-input').value.trim().toLowerCase();
             const data = s3Exercises[currentS3Index];
@@ -1729,10 +1790,11 @@
                         <div>
                             <p class="font-bold text-lg">Estructura incorrecta</p>
                             <p class="text-sm mt-1">Recuerda iniciar con el verbo auxiliar o Wh-word. Tu respuesta actual: "${val}".</p>
-                            <button onclick="revealSection3Answer()" class="mt-2 text-xs font-bold text-purple-500 hover:underline">Revelar pregunta sugerida</button>
+                            <button id="btn-reveal-s3" class="mt-2 text-xs font-bold text-purple-500 hover:underline">Revelar pregunta sugerida</button>
                         </div>
                     </div>
                 `;
+                document.getElementById('btn-reveal-s3').onclick = revealSection3Answer;
             }
             lucide.createIcons();
         }
@@ -1740,7 +1802,7 @@
         function revealSection3Answer() {
             const data = s3Exercises[currentS3Index];
             document.getElementById('s3-input').value = data.solution;
-            showToast("Pregunta autocompletada", "info", "text-purple-500");
+            showToast("Pregunta sugerida cargada", "info", "text-purple-500");
         }
 
         function compareAnswers(a, b) {
@@ -1757,7 +1819,6 @@
             return clean(a) === clean(b);
         }
 
-        // --- TOAST NOTIFICATIONS ---
         function showToast(message, iconName = "info", colorClass = "text-blue-400") {
             const toast = document.getElementById('toast-notif');
             const text = document.getElementById('toast-text');
@@ -1777,6 +1838,29 @@
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
+
+        // Vincular funciones globales seguras al objeto window para invocaciones inline onclick
+        window.toggleDarkMode = toggleDarkMode;
+        window.toggleGeminiModal = toggleGeminiModal;
+        window.toggleTeacherModal = toggleTeacherModal;
+        window.loginWithGoogleOAuth = loginWithGoogleOAuth;
+        window.saveGeminiSettings = saveGeminiSettings;
+        window.clearGeminiSettings = clearGeminiSettings;
+        window.toggleApiKeyVisibility = toggleApiKeyVisibility;
+        window.switchTab = switchTab;
+        window.jumpToExercise = jumpToExercise;
+        window.prevExercise = prevExercise;
+        window.nextExercise = nextExercise;
+        window.speakCurrentSentence = speakCurrentSentence;
+        window.speakShadowingSentence = speakShadowingSentence;
+        window.startListening = startListening;
+        window.startShadowingRecording = startShadowingRecording;
+        window.checkSection1Answer = checkSection1Answer;
+        window.completeShadowing = completeShadowing;
+        window.checkSection3Answer = checkSection3Answer;
+        window.requestResetAllProgress = requestResetAllProgress;
+        window.closeConfirmModal = closeConfirmModal;
+        window.clearAudioCache = clearAudioCache;
     </script>
 </body>
 </html>
