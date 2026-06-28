@@ -352,7 +352,7 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA (EXCLUIDO EL PANEL VISIBLE DE GOOGLE SHEETS) -->
+    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
         <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in font-sans">
             <div class="flex justify-between items-start">
@@ -365,14 +365,14 @@
                 </button>
             </div>
 
-            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE (OAUTH LIMPIO) -->
+            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE -->
             <div class="space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] font-bold">1</span>
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identificación de Estudiante</h4>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización automática de tu progreso.
+                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización automática de tu progreso en Google Sheets.
                 </p>
 
                 <!-- BOTON DE CONECTAR CON GOOGLE -->
@@ -428,7 +428,7 @@
             <!-- SELECCIONADOR DE VOZ -->
             <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
-                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
                     <option value="Kore">Kore (Voz Clara Estándar)</option>
                     <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
                     <option value="Charon">Charon (Tono Profundo)</option>
@@ -513,7 +513,7 @@
             { id: 37, prompt: "I ___ making dinner, I ordered pizza.", translation: "No estoy haciendo la cena, pedí pizza.", solution: "am not", context: "Negación para primera persona singular: 'I am not'.", type: "Negativa" },
             { id: 38, prompt: "You and I ___ studying together.", translation: "Tú y yo estamos estudiando juntos.", solution: "are", context: "Tú y yo equivale a 'We' (Nosotros), usamos 'are'.", type: "Afirmativa" },
             { id: 39, prompt: "They ___ cooking delicious pasta.", translation: "Ellos están cocinando pasta de forma deiciosa.", solution: "are", context: "Sujeto 'They' utiliza 'are'.", type: "Afirmativa" },
-            { id: 40, prompt: "The dog ___ barking at the cat.", translation: "El perro está ladrándole al gato.", solution: "is", context: "Perro (singular) requiere 'is' para continuous.", type: "Afirmativa" },
+            { id: 40, prompt: "The dog ___ barking at the cat.", translation: "El perro está ladrándole al gato.", solution: "is", context: "El perro (singular) requiere 'is' para continuous.", type: "Afirmativa" },
             { id: 41, prompt: "We ___ going to the beach.", translation: "Nosotros no vamos a ir a la playa.", solution: "aren't", context: "Negativo con contracción de Present Continuous para 'We': 'we aren't going'.", type: "Negativa" },
             { id: 42, prompt: "She ___ an excellent doctor.", translation: "Ella es una excelente doctora.", solution: "is", context: "Profesión con To Be para 'She': usamos 'is'.", type: "Afirmativa" },
             { id: 43, prompt: "I ___ drinking fresh water.", translation: "Estoy bebiendo agua fresca.", solution: "am", context: "Acción en progreso con 'I': 'am drinking'.", type: "Afirmativa" },
@@ -572,7 +572,7 @@
             { id: 42, text: "I am taking a small break.", translation: "Me estoy tomando un pequeño descanso." },
             { id: 43, text: "They are studying for the test.", translation: "Ellos están estudiando para el examen." },
             { id: 44, text: "He is not wearing his glasses.", translation: "Él no está usando sus lentes." },
-            { id: 45, text: "We are building a sandcastle.", transition: "Estamos construyendo un castillo de arena." },
+            { id: 45, text: "We are building a sandcastle.", translation: "Estamos construyendo un castillo de arena." },
             { id: 46, text: "The flowers are opening in spring.", translation: "Las flores se están abriendo en primavera." },
             { id: 47, text: "You are learning very quickly.", translation: "Estás haciendo progresos muy rápidos." },
             { id: 48, text: "It is not snowing this morning.", translation: "No está nevando esta mañana." },
@@ -611,7 +611,7 @@
             { id: 27, prompt: "She is a beautiful baby.", translation: "Es una bebé hermosa.", solution: "Is she a beautiful baby?", context: "To Be interrogativo con adjetivo y sustantivo." },
             { id: 28, prompt: "We are studying for the exam.", translation: "Estamos estudiando para el examen.", solution: "Why are you studying?", context: "Pregunta de propósito." },
             { id: 29, prompt: "No, the shop is not open.", translation: "No, la tienda no está abierta.", solution: "Is the shop open?", context: "Pregunta sobre el estado de un establecimiento." },
-            { id: 30, prompt: "He is visiting his grandmother.", translation: "Él está visitando a su abuela.", solution: "Who is he visiting?", context: "Pregunta por persona con 'Who'." },
+            { id: 30, prompt: "He is visiting his grandmother.", translation: "Él está visiting a su abuela.", solution: "Who is he visiting?", context: "Pregunta por persona con 'Who'." },
             { id: 31, prompt: "The train is arriving at 9 PM.", translation: "El tren llegará a las 9 PM.", solution: "What time is the train arriving?", context: "Pregunta sobre tiempo de llegada." },
             { id: 32, prompt: "Yes, they are best friends.", translation: "Sí, son mejores amigos.", solution: "Are they best friends?", context: "Pregunta de relación personal." },
             { id: 33, prompt: "No, I am not tired.", translation: "No, no estoy cansado.", solution: "Are you tired?", context: "Pregunta básica de estado físico." },
@@ -679,16 +679,14 @@
 
         let audioCache = {};
 
-        // Métodos de autenticación y claves (Client ID idéntico)
+        // Métodos de autenticación y claves
         const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
         let googleAccessToken = '';
         let googleTokenExpiry = 0; 
         let geminiApiKey = '';
         
-        // --- OFUSCACIÓN DEL NUEVO WEB APP ENDPOINT DE GOOGLE SHEETS ---
-        // Se arma la URL del Apps Script desde un mapa de códigos de caracteres para que no sea visible en texto plano
-        const _scCodes = [104,116,116,112,115,58,47,47,115,99,114,105,112,116,46,103,111,111,103,108,101,46,99,111,109,47,109,97,99,114,111,115,47,115,47,65,75,102,121,99,98,122,52,83,56,75,99,82,49,114,50,83,121,100,48,82,82,45,95,81,65,73,52,81,85,51,85,76,117,73,75,111,118,50,111,100,112,77,110,85,57,113,83,111,85,54,76,105,87,98,50,48,79,98,74,111,49,99,55,69,116,69,89,69,80,89,72,51,81,47,101,120,101,99];
-        const googleSheetsUrl = _scCodes.map(c => String.fromCharCode(c)).join('');
+        // --- WEB APP ENDPOINT DE GOOGLE SHEETS ASIGNADO DIRECTAMENTE ---
+        const googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbzoMsmKs-Agas_lorTX0622S7gMRPXAcwB_RWT9pNXRiRUJ3NDquMOiaIybzt-YAJWF7A/exec';
         let preferredVoice = 'Kore';
 
         // Almacenar perfil de Google del alumno
@@ -730,11 +728,11 @@
             safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
             updateProgressUI();
             
-            // Dispara el guardado automático e instantáneo en Google Sheets
+            // Dispara el guardado automático en Google Sheets
             syncToGoogleSheets();
         }
 
-        // Función centralizada para enviar el progreso consolidado a Google Sheets en segundo plano
+        // Sincronizar el progreso consolidado con Google Sheets siguiendo el formato exacto de columnas solicitado
         async function syncToGoogleSheets() {
             if (!googleSheetsUrl) {
                 updateSyncStatusUI('local', 'Auto Local');
@@ -753,7 +751,7 @@
             const total = s1Count + s2Count + s3Count;
             const percentage = Math.round((total / 150) * 100);
 
-            // Generar el payload estructurado exactamente con el orden solicitado para tus columnas de Google Sheet:
+            // Payload estructurado exactamente con el orden solicitado por tus columnas de Google Sheet:
             // [Fecha, Email, Nombre, Gramatica, Shadowing, Preguntas, Progreso]
             const payload = {
                 fecha: new Date().toLocaleString("es-ES", { timeZone: "America/Caracas" }),
@@ -766,7 +764,7 @@
             };
 
             try {
-                // Envío de datos HTTP POST en segundo plano (Zero clicks del estudiante)
+                // Envío de datos HTTP POST en segundo plano de manera silenciosa
                 await fetch(googleSheetsUrl, {
                     method: "POST",
                     mode: "no-cors",
@@ -907,7 +905,7 @@
 
             updateAuthBadgeUI();
             
-            // Reportar estado en Sheets al arrancar
+            // Reportar estado en Sheets al arrancar si ya está conectado
             if (googleSheetsUrl && studentProfile) {
                 syncToGoogleSheets();
             }
@@ -1004,7 +1002,7 @@
                 showToast("¡Cuenta Google vinculada correctamente!", "check", "text-emerald-500");
                 updateAuthBadgeUI();
                 
-                // Trata de sincronizar instantáneamente el progreso acumulado tras loguearse
+                // Sincroniza el progreso inmediatamente tras loguearse
                 syncToGoogleSheets();
                 triggerPrefetch();
             }
@@ -1022,7 +1020,7 @@
             }
         }
 
-        // Guarda configuración general y actualiza base de datos local
+        // Guarda configuración general
         function saveGeminiSettings() {
             const voice = document.getElementById('gemini-voice-select').value;
             const apiKey = document.getElementById('gemini-api-key-input').value.trim();
@@ -1332,7 +1330,7 @@
                     parts: [{ text: `Say clearly: ${text}` }]
                 }],
                 generationConfig: {
-                    responseModalities: ["AUDIO"],
+                    responseModalalities: ["AUDIO"],
                     speechConfig: {
                         voiceConfig: {
                             prebuiltVoiceConfig: {
@@ -1413,6 +1411,7 @@
             }
         }
 
+        // Eventos y acciones del reproductor
         function speakCurrentSentence() {
             const data = s1Exercises[currentS1Index];
             const fullSentence = data.prompt.replace("___", data.solution);
