@@ -352,7 +352,7 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA Y GOOGLE SHEETS -->
+    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA (EXCLUIDO EL PANEL VISIBLE DE GOOGLE SHEETS) -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
         <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in font-sans">
             <div class="flex justify-between items-start">
@@ -372,7 +372,7 @@
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identificación de Estudiante</h4>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización de tu progreso directamente en la tabla de tu profesor.
+                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización automática de tu progreso.
                 </p>
 
                 <!-- BOTON DE CONECTAR CON GOOGLE -->
@@ -422,21 +422,6 @@
                             <i id="key-visibility-icon" data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- PASO 3: CONFIGURAR GOOGLE SHEETS DEL PROFESOR -->
-            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">3</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Guardado en Google Sheets del Profesor</h4>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Introduce el enlace de Google Apps Script creado por tu profesor para reportar tu progreso en tiempo real de forma automática.
-                </p>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold uppercase text-slate-400">URL del Web App (Apps Script)</label>
-                    <input type="text" id="sheets-url-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" placeholder="https://script.google.com/macros/s/.../exec">
                 </div>
             </div>
 
@@ -694,15 +679,16 @@
 
         let audioCache = {};
 
-        // Métodos de autenticación y claves (Client ID idéntico a tu captura)
+        // Métodos de autenticación y claves (Client ID idéntico)
         const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
         let googleAccessToken = '';
-        let googleTokenExpiry = 0; // Timestamp en ms
+        let googleTokenExpiry = 0; 
         let geminiApiKey = '';
         
-        // URL predeterminada proporcionada por el usuario para Google Sheets
-        const DEFAULT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwvn6PbBd6z04ki3C9tDpMUyYi2nLlhezY7AIR61rj0YNi-3Bef6srZ5X660iOV1Vg1Jg/exec';
-        let googleSheetsUrl = DEFAULT_SHEETS_URL;
+        // --- OFUSCACIÓN CRÍTICA DEL ENDPOINT ---
+        // Se arma la URL del Apps Script desde un mapa de códigos de caracteres hexadecimales para que el estudiante no la vea al inspeccionar.
+        const _scCodes = [104,116,116,112,115,58,47,47,115,99,114,105,112,116,46,103,111,111,103,108,101,46,99,111,109,47,109,97,99,114,111,115,47,115,47,65,75,102,121,99,98,120,82,73,56,111,67,54,90,110,100,73,50,49,119,105,87,66,51,55,90,112,113,111,77,112,108,100,75,95,53,69,99,49,49,114,48,109,109,104,53,45,65,115,97,79,104,86,114,111,113,111,101,76,110,114,79,73,67,54,71,85,77,101,48,83,97,100,119,47,101,120,101,99];
+        const googleSheetsUrl = _scCodes.map(c => String.fromCharCode(c)).join('');
         let preferredVoice = 'Kore';
 
         // Almacenar perfil de Google del alumno
@@ -744,15 +730,13 @@
             safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
             updateProgressUI();
             
-            // Dispara el guardado automático e instantáneo en Google Sheets si está configurado
+            // Dispara el guardado automático e instantáneo en Google Sheets
             syncToGoogleSheets();
         }
 
         // Función centralizada para enviar el progreso consolidado a Google Sheets en segundo plano
         async function syncToGoogleSheets() {
-            const currentUrl = googleSheetsUrl || DEFAULT_SHEETS_URL;
-            
-            if (!currentUrl) {
+            if (!googleSheetsUrl) {
                 updateSyncStatusUI('local', 'Auto Local');
                 return;
             }
@@ -781,7 +765,7 @@
 
             try {
                 // Envío de datos HTTP POST en segundo plano (Zero clicks del estudiante)
-                await fetch(currentUrl, {
+                await fetch(googleSheetsUrl, {
                     method: "POST",
                     mode: "no-cors",
                     headers: { "Content-Type": "application/json" },
@@ -895,7 +879,6 @@
             const savedExpiry = safeStorage.getItem('google_token_expiry');
             const savedProfile = safeStorage.getItem('google_student_profile');
             const savedApiKey = safeStorage.getItem('gemini_api_key');
-            const savedSheetsUrl = safeStorage.getItem('google_sheets_url');
             
             if (savedAccessToken && savedExpiry) {
                 googleAccessToken = savedAccessToken;
@@ -920,18 +903,9 @@
                 document.getElementById('gemini-api-key-input').value = savedApiKey;
             }
 
-            // Inicializar con la URL predeterminada si el alumno no ha configurado una distinta en local
-            if (savedSheetsUrl) {
-                googleSheetsUrl = savedSheetsUrl;
-                document.getElementById('sheets-url-input').value = savedSheetsUrl;
-            } else {
-                googleSheetsUrl = DEFAULT_SHEETS_URL;
-                document.getElementById('sheets-url-input').value = DEFAULT_SHEETS_URL;
-            }
-
             updateAuthBadgeUI();
             
-            // Trata de reportar estado en Sheets al arrancar
+            // Reportar estado en Sheets al arrancar
             if (googleSheetsUrl && studentProfile) {
                 syncToGoogleSheets();
             }
@@ -976,7 +950,7 @@
             }
         }
 
-        // Inicializar el cliente de Google Identity Services (Alcance simplificado sin error 400)
+        // Inicializar el cliente de Google Identity Services
         function initGoogleOAuthClient() {
             if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
                 setTimeout(initGoogleOAuthClient, 1000);
@@ -1050,7 +1024,6 @@
         function saveGeminiSettings() {
             const voice = document.getElementById('gemini-voice-select').value;
             const apiKey = document.getElementById('gemini-api-key-input').value.trim();
-            const sheetsUrl = document.getElementById('sheets-url-input').value.trim();
 
             clearAudioCache();
             preferredVoice = voice;
@@ -1059,14 +1032,11 @@
             geminiApiKey = apiKey;
             safeStorage.setItem('gemini_api_key', apiKey);
 
-            googleSheetsUrl = sheetsUrl;
-            safeStorage.setItem('google_sheets_url', sheetsUrl);
-
             updateAuthBadgeUI();
             toggleGeminiModal();
             showToast("Configuración guardada con éxito", "check", "text-emerald-500");
             
-            // Reintenta sincronización de progreso inmediata con el nuevo endpoint
+            // Reintenta sincronización de progreso inmediata
             syncToGoogleSheets();
             triggerPrefetch();
         }
@@ -1076,16 +1046,13 @@
             googleTokenExpiry = 0;
             studentProfile = null;
             geminiApiKey = '';
-            googleSheetsUrl = '';
             
             safeStorage.removeItem('google_access_token');
             safeStorage.removeItem('google_token_expiry');
             safeStorage.removeItem('google_student_profile');
             safeStorage.removeItem('gemini_api_key');
-            safeStorage.removeItem('google_sheets_url');
             
             document.getElementById('gemini-api-key-input').value = '';
-            document.getElementById('sheets-url-input').value = '';
             
             clearAudioCache();
             updateAuthBadgeUI();
