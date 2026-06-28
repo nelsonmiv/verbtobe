@@ -62,22 +62,16 @@
             
             <!-- CONTROLES GLOBALES -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Dashboard de Profesor (Ver Progreso de Alumnos) -->
-                <button onclick="toggleTeacherModal()" id="btn-teacher-dashboard" class="hidden flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-lg text-sm font-semibold transition-all">
-                    <i data-lucide="users" class="w-4 h-4"></i>
-                    <span>Panel de Control</span>
-                </button>
-
                 <!-- Configuración Gemini API / Google OAuth -->
                 <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
                     <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
-                    <span>Configurar Gemini</span>
+                    <span>Configuración</span>
                     <span id="gemini-badge" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                 </button>
 
-                <!-- Guardado en la nube / Local info -->
-                <div id="cloud-sync-indicator" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700">
-                    <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                <!-- Guardado en la nube / Local info (ESTADO DINÁMICO) -->
+                <div id="sync-status-badge" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-850 transition-all duration-300">
+                    <i id="sync-icon" data-lucide="database" class="w-3.5 h-3.5"></i>
                     <span id="sync-status-text">Guardado Local</span>
                 </div>
 
@@ -143,7 +137,7 @@
         </nav>
 
         <!-- SECCIÓN DE TRABAJO -->
-        <main class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 dark:border-slate-800/80 min-h-[450px] relative">
+        <main class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 dark:border-slate-800/80 min-h-[450px] relative font-sans">
             
             <!-- NAVEGADOR INTERNO DE EJERCICIOS (1 A 50) -->
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/50">
@@ -169,7 +163,7 @@
             
             <!-- PESTAÑA 1: AFIRMATIVAS Y NEGATIVAS -->
             <div id="tab1-content" class="tab-pane active-pane">
-                <div class="space-y-6">
+                <div class="space-y-6 animate-fade-in">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
                             Completa los Espacios / Gramática A1
@@ -226,7 +220,7 @@
 
             <!-- PESTAÑA 2: SHADOWING ACTIVO -->
             <div id="tab2-content" class="tab-pane hidden">
-                <div class="space-y-6">
+                <div class="space-y-6 animate-fade-in">
                     <div>
                         <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold">
                             Análisis de Pronunciación y Práctica Auditiva
@@ -244,7 +238,7 @@
                                 <span class="text-xs font-bold text-slate-400 uppercase">Paso 1:</span>
                                 <span class="text-sm font-medium">Escucha el audio nativo</span>
                             </div>
-                            <button onclick="speakShadowingSentence()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                            <button onclick="speakShadowingSentence()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm animate-pulse-once">
                                 <i data-lucide="volume-2" class="w-4.5 h-4.5"></i> Escuchar Pronunciación
                             </button>
                         </div>
@@ -299,7 +293,7 @@
 
             <!-- PESTAÑA 3: REVERSE QUESTIONS -->
             <div id="tab3-content" class="tab-pane hidden">
-                <div class="space-y-6">
+                <div class="space-y-6 animate-fade-in">
                     <div>
                         <span class="px-3 py-1 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded-full text-xs font-semibold">
                             Estructura Gramatical Invertida (Preguntas)
@@ -358,30 +352,30 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA -->
+    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA Y GOOGLE SHEETS -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in font-sans">
             <div class="flex justify-between items-start">
                 <div class="flex items-center gap-2">
                     <i data-lucide="sparkles" class="w-6 h-6 text-purple-500 animate-pulse"></i>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Conectar Gemini TTS</h3>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Panel de Configuración</h3>
                 </div>
                 <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE (OAUTH SIMPLIFICADO) -->
+            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE (OAUTH LIMPIO) -->
             <div class="space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] font-bold">1</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identifícate como Alumno</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identificación de Estudiante</h4>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Inicia sesión de forma segura para cargar tu nombre, guardar tu progreso automáticamente en la nube y sincronizar con tu profesor.
+                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización de tu progreso directamente en la tabla de tu profesor.
                 </p>
 
-                <!-- BOTON DE CONECTAR CON GOOGLE (OAuth Limpio sin scope de Gemini) -->
+                <!-- BOTON DE CONECTAR CON GOOGLE -->
                 <div class="pt-1">
                     <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-xs transition-all shadow-sm">
                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -390,7 +384,7 @@
                             <path fill="#FBBC05" d="M5.27 14.24A7.16 7.16 0 0 1 5 12c0-.79.13-1.57.38-2.31V6.54H1.21A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.21 5.46l4.06-3.22z"/>
                             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.18 2.12 1.21 5.7l4.06 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
                         </svg>
-                        <span id="oauth-btn-text">Iniciar Sesión de Alumno</span>
+                        <span id="oauth-btn-text">Vincular Cuenta Google</span>
                     </button>
                     <!-- ESTADO DEL PERFIL CONECTADO -->
                     <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 mt-2">
@@ -403,19 +397,19 @@
                 </div>
             </div>
 
-            <!-- PASO 2: OBTENER API KEY EN GOOGLE AI STUDIO (EXPLICACIÓN SENCILLA) -->
-            <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <!-- PASO 2: OBTENER API KEY DE GEMINI -->
+            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <div class="flex items-center gap-2">
                     <span class="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold">2</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Consigue tu Clave API (100% Gratis)</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Voz IA de Gemini (100% Gratis)</h4>
                 </div>
                 
                 <div class="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-2 text-xs">
-                    <p class="font-semibold text-purple-700 dark:text-purple-300">Sigue estos rápidos pasos para habilitar el sintetizador de voz de la IA:</p>
+                    <p class="font-semibold text-purple-700 dark:text-purple-300">Sigue estos rápidos pasos para habilitar el sintetizador de voz nativo:</p>
                     <ol class="list-decimal pl-4 space-y-1.5 text-slate-600 dark:text-slate-300">
-                        <li>Entra a <a href="https://aistudio.google.com/" target="_blank" class="text-blue-500 font-bold hover:underline inline-flex items-center gap-0.5">Google AI Studio <i data-lucide="external-link" class="w-3 h-3"></i></a> e inicia sesión con tu correo de Google.</li>
-                        <li>Haz clic en el botón azul de arriba a la izquierda que dice <strong>"Get API key"</strong> (Obtener clave API).</li>
-                        <li>Haz clic en <strong>"Create API key"</strong>, copia el código que empieza con <code class="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded font-mono">AIzaSy...</code> y pégalo abajo.</li>
+                        <li>Entra en <a href="https://aistudio.google.com/" target="_blank" class="text-blue-500 font-bold hover:underline inline-flex items-center gap-0.5">Google AI Studio <i data-lucide="external-link" class="w-3 h-3"></i></a> e inicia sesión con tu Gmail.</li>
+                        <li>Haz clic en el botón azul arriba a la izquierda: **"Get API key"** (Obtener clave API).</li>
+                        <li>Haz clic en **"Create API key"**, copia el código (`AIzaSy...`) y pégalo abajo.</li>
                     </ol>
                 </div>
 
@@ -424,15 +418,30 @@
                     <label class="block text-xs font-bold uppercase text-slate-400">Pegar Clave API de Gemini</label>
                     <div class="relative">
                         <input type="password" id="gemini-api-key-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none font-mono" placeholder="AIzaSy...">
-                        <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300" title="Mostrar/Ocultar">
+                        <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-350" title="Mostrar/Ocultar">
                             <i id="key-visibility-icon" data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- SELECCIONADOR DE VOZ COMUN -->
-            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <!-- PASO 3: CONFIGURAR GOOGLE SHEETS DEL PROFESOR -->
+            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">3</span>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Guardado en Google Sheets del Profesor</h4>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Introduce el enlace de Google Apps Script creado por tu profesor para reportar tu progreso en tiempo real de forma automática.
+                </p>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-slate-400">URL del Web App (Apps Script)</label>
+                    <input type="text" id="sheets-url-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+            </div>
+
+            <!-- SELECCIONADOR DE VOZ -->
+            <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
                 <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
                     <option value="Kore">Kore (Voz Clara Estándar)</option>
@@ -455,54 +464,9 @@
         </div>
     </div>
 
-    <!-- MODAL DASHBOARD DE PROFESOR (VISTA DE PROGRESO DE TODOS LOS ALUMNOS) -->
-    <div id="teacher-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-4xl w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="users" class="w-6 h-6 text-purple-500"></i>
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Panel de Control del Profesor</h3>
-                        <p class="text-xs text-slate-400">Sigue en tiempo real el progreso de todos tus alumnos conectados</p>
-                    </div>
-                </div>
-                <button onclick="toggleTeacherModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <!-- TABLA DE ALUMNOS -->
-            <div class="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 dark:bg-slate-900 text-slate-500 text-xs font-bold uppercase border-b border-slate-200 dark:border-slate-800">
-                            <th class="p-4">Estudiante</th>
-                            <th class="p-4 text-center">Gramática (S1)</th>
-                            <th class="p-4 text-center">Pronunciación (S2)</th>
-                            <th class="p-4 text-center">Inversión (S3)</th>
-                            <th class="p-4">Total</th>
-                            <th class="p-4">Última Actividad</th>
-                        </tr>
-                    </thead>
-                    <tbody id="student-progress-table-body" class="text-xs divide-y divide-slate-200 dark:divide-slate-800">
-                        <!-- Cargar dinámicamente desde Firestore -->
-                        <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-400">
-                                <div class="flex flex-col items-center justify-center gap-2">
-                                    <i data-lucide="loader" class="w-6 h-6 animate-spin text-purple-500"></i>
-                                    <span>Conectando con la base de datos de estudiantes...</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE CONFIRMACIÓN MODERNO (REEMPLAZA CONFIRM NATIVO) -->
+    <!-- MODAL DE CONFIRMACIÓN MODERNO -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center font-sans">
             <div class="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center mx-auto">
                 <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
@@ -686,59 +650,15 @@
         ];
     </script>
 
-    <!-- MOTOR PRINCIPAL CON INTEGRACIÓN DE BASE DE DATOS FIRESTORE (SINCRONIZACIÓN) -->
-    <script type="module">
-        // Configuración inyectada y cargadores de módulos
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'english-learning-portal';
-        let db = null;
-        let auth = null;
-        let firebaseUser = null;
-
-        // Intentar conectar con la base de datos Firestore en la nube de Canvas
-        if (typeof __firebase_config !== 'undefined') {
-            try {
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-                const { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-
-                const firebaseConfig = JSON.parse(__firebase_config);
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                // Autenticación asíncrona silenciosa requerida antes de hacer consultas (Regla 3)
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    firebaseUser = (await signInWithCustomToken(auth, token)).user;
-                } else {
-                    firebaseUser = (await signInAnonymously(auth)).user;
-                }
-                
-                console.log("Firebase conectado de manera segura con UID:", firebaseUser.uid);
-                
-                // Activar Dashboard de Profesor si hay conexión a la base de datos
-                document.getElementById('btn-teacher-dashboard').classList.remove('hidden');
-                
-                // Escuchar cambios de todos los alumnos en tiempo real para el Panel del Profesor (Regla 2 - Query Simple)
-                const progressCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_progress');
-                onSnapshot(progressCol, (snapshot) => {
-                    renderTeacherDashboard(snapshot);
-                }, (error) => {
-                    console.error("Fallo al sincronizar base de datos de alumnos:", error);
-                });
-
-            } catch (e) {
-                console.warn("Firebase no inicializado. Operando en modo de respaldo LocalStorage.", e);
-            }
-        }
-
-        // Adaptador seguro para almacenamiento local en el navegador (Para evitar fallas de iframe)
+    <!-- MOTOR LÓGICO DE LA APP -->
+    <script>
         const memoryStorage = {};
         const safeStorage = {
             getItem: function(key) {
                 try {
                     return localStorage.getItem(key);
                 } catch (e) {
+                    console.warn("Storage bloqueado, cargando memoria temporal.", e);
                     return memoryStorage[key] || null;
                 }
             },
@@ -746,6 +666,7 @@
                 try {
                     localStorage.setItem(key, value);
                 } catch (e) {
+                    console.warn("Storage bloqueado, escribiendo en memoria temporal.", e);
                     memoryStorage[key] = String(value);
                 }
             },
@@ -758,12 +679,13 @@
             }
         };
 
-        // Variables de estado global
+        // Variables de estado
         let activeTab = 'tab1';
         let currentS1Index = 0;
         let currentS2Index = 0;
         let currentS3Index = 0;
 
+        // Progreso guardado localmente
         let progress = {
             tab1: Array(50).fill(false),
             tab2: Array(50).fill(false),
@@ -771,17 +693,26 @@
         };
 
         let audioCache = {};
+
+        // Métodos de autenticación y claves (Client ID idéntico a tu captura)
         const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
         let googleAccessToken = '';
-        let googleTokenExpiry = 0;
+        let googleTokenExpiry = 0; // Timestamp en ms
         let geminiApiKey = '';
+        
+        // URL predeterminada proporcionada por el usuario para Google Sheets
+        const DEFAULT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwvn6PbBd6z04ki3C9tDpMUyYi2nLlhezY7AIR61rj0YNi-3Bef6srZ5X660iOV1Vg1Jg/exec';
+        let googleSheetsUrl = DEFAULT_SHEETS_URL;
         let preferredVoice = 'Kore';
+
+        // Almacenar perfil de Google del alumno
         let studentProfile = null;
         let onConfirmCallback = null;
-        let tokenClient = null;
-        let recognition = null;
+        let tokenClient;
+        let recognition;
         let isRecording = false;
 
+        // Inicialización
         window.onload = function() {
             lucide.createIcons();
             loadProgressFromStorage();
@@ -808,88 +739,89 @@
             }
         }
 
-        // Guardar progreso y sincronizar instantáneamente en la nube
-        async function saveProgressToStorage() {
+        // Guardar progreso utilizando el storage seguro y sincronizar automáticamente con Google Sheets
+        function saveProgressToStorage() {
             safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
             updateProgressUI();
-
-            // Sincronización en la nube si hay sesión y base de datos activa (Regla 1 y 3)
-            if (db && studentProfile && firebaseUser) {
-                document.getElementById('sync-status-text').innerText = "Sincronizando...";
-                try {
-                    const safeEmailKey = studentProfile.email.replace(/[^a-zA-Z0-9]/g, "_");
-                    const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                    
-                    const progressDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'student_progress', safeEmailKey);
-                    await setDoc(progressDocRef, {
-                        email: studentProfile.email,
-                        name: studentProfile.name,
-                        picture: studentProfile.picture || '',
-                        progress: progress,
-                        last_updated: new Date().toISOString()
-                    });
-
-                    document.getElementById('cloud-sync-indicator').className = "flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold border border-emerald-500/30";
-                    document.getElementById('sync-status-text').innerText = "Guardado en Nube";
-                } catch (err) {
-                    console.error("Error sincronizando progreso en la nube:", err);
-                    document.getElementById('sync-status-text').innerText = "Guardado Local";
-                }
-            } else {
-                document.getElementById('cloud-sync-indicator').className = "flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700";
-                document.getElementById('sync-status-text').innerText = "Guardado Local";
-            }
+            
+            // Dispara el guardado automático e instantáneo en Google Sheets si está configurado
+            syncToGoogleSheets();
         }
 
-        // Renderizar la tabla dinámica del profesor desde Firestore en tiempo real
-        function renderTeacherDashboard(snapshot) {
-            const tbody = document.getElementById('student-progress-table-body');
-            if (!tbody) return;
-
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Ningún estudiante se ha conectado todavía.</td></tr>`;
+        // Función centralizada para enviar el progreso consolidado a Google Sheets en segundo plano
+        async function syncToGoogleSheets() {
+            const currentUrl = googleSheetsUrl || DEFAULT_SHEETS_URL;
+            
+            if (!currentUrl) {
+                updateSyncStatusUI('local', 'Auto Local');
+                return;
+            }
+            if (!studentProfile) {
+                updateSyncStatusUI('local', 'Inicia Sesión');
                 return;
             }
 
-            tbody.innerHTML = '';
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                if (!data.progress) return;
+            updateSyncStatusUI('syncing', 'Sincronizando...');
 
-                // Calcular totales
-                const s1 = data.progress.tab1 ? data.progress.tab1.filter(Boolean).length : 0;
-                const s2 = data.progress.tab2 ? data.progress.tab2.filter(Boolean).length : 0;
-                const s3 = data.progress.tab3 ? data.progress.tab3.filter(Boolean).length : 0;
-                const total = s1 + s2 + s3;
-                const percentage = Math.round((total / 150) * 100);
+            const s1Count = progress.tab1.filter(Boolean).length;
+            const s2Count = progress.tab2.filter(Boolean).length;
+            const s3Count = progress.tab3.filter(Boolean).length;
+            const total = s1Count + s2Count + s3Count;
+            const percentage = Math.round((total / 150) * 100);
 
-                const date = data.last_updated ? new Date(data.last_updated).toLocaleString() : 'N/A';
+            // Generar el payload limpio para la hoja de cálculo
+            const payload = {
+                email: studentProfile.email,
+                name: studentProfile.name,
+                progress_s1: `${s1Count}/50`,
+                progress_s2: `${s2Count}/50`,
+                progress_s3: `${s3Count}/50`,
+                total_progress: `${percentage}%`
+            };
 
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-4 flex items-center gap-2.5">
-                        <img src="${data.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=' + data.name[0]}" class="w-8 h-8 rounded-full border border-purple-500 object-cover" onerror="this.src='https://placehold.co/40x40/3b82f6/ffffff?text=U'">
-                        <div>
-                            <p class="font-bold text-slate-900 dark:text-white">${data.name}</p>
-                            <p class="text-[10px] text-slate-400">${data.email}</p>
-                        </div>
-                    </td>
-                    <td class="p-4 text-center font-semibold text-blue-500">${s1} / 50</td>
-                    <td class="p-4 text-center font-semibold text-emerald-500">${s2} / 50</td>
-                    <td class="p-4 text-center font-semibold text-purple-500">${s3} / 50</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold shrink-0">${percentage}%</span>
-                            <div class="w-20 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-purple-500 h-full" style="width: ${percentage}%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4 text-slate-400 text-[10px]">${date}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            try {
+                // Envío de datos HTTP POST en segundo plano (Zero clicks del estudiante)
+                await fetch(currentUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                
+                updateSyncStatusUI('synced', 'Sincronizado');
+            } catch (error) {
+                console.error("Fallo de guardado automático en Google Sheets:", error);
+                updateSyncStatusUI('error', 'Error de Sinc');
+            }
+        }
+
+        // Actualiza el indicador visual en el encabezado
+        function updateSyncStatusUI(status, text) {
+            const badge = document.getElementById('sync-status-badge');
+            const icon = document.getElementById('sync-icon');
+            const statusText = document.getElementById('sync-status-text');
+
+            if (!badge || !icon || !statusText) return;
+
+            statusText.innerText = text;
+
+            if (status === 'syncing') {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-lg text-xs font-semibold border border-yellow-500/30 animate-pulse";
+                icon.setAttribute('data-lucide', 'refresh-cw');
+                icon.className = "w-3.5 h-3.5 animate-spin text-yellow-500";
+            } else if (status === 'synced') {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold border border-emerald-500/30";
+                icon.setAttribute('data-lucide', 'cloud-check');
+                icon.className = "w-3.5 h-3.5 text-emerald-500";
+            } else if (status === 'error') {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-semibold border border-rose-500/30";
+                icon.setAttribute('data-lucide', 'cloud-off');
+                icon.className = "w-3.5 h-3.5 text-rose-500";
+            } else {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700";
+                icon.setAttribute('data-lucide', 'database');
+                icon.className = "w-3.5 h-3.5 text-slate-400";
+            }
             lucide.createIcons();
         }
 
@@ -963,6 +895,7 @@
             const savedExpiry = safeStorage.getItem('google_token_expiry');
             const savedProfile = safeStorage.getItem('google_student_profile');
             const savedApiKey = safeStorage.getItem('gemini_api_key');
+            const savedSheetsUrl = safeStorage.getItem('google_sheets_url');
             
             if (savedAccessToken && savedExpiry) {
                 googleAccessToken = savedAccessToken;
@@ -987,10 +920,23 @@
                 document.getElementById('gemini-api-key-input').value = savedApiKey;
             }
 
+            // Inicializar con la URL predeterminada si el alumno no ha configurado una distinta en local
+            if (savedSheetsUrl) {
+                googleSheetsUrl = savedSheetsUrl;
+                document.getElementById('sheets-url-input').value = savedSheetsUrl;
+            } else {
+                googleSheetsUrl = DEFAULT_SHEETS_URL;
+                document.getElementById('sheets-url-input').value = DEFAULT_SHEETS_URL;
+            }
+
             updateAuthBadgeUI();
+            
+            // Trata de reportar estado en Sheets al arrancar
+            if (googleSheetsUrl && studentProfile) {
+                syncToGoogleSheets();
+            }
         }
 
-        // Actualizar visualmente la insignia e indicador de OAuth de Google y API Key
         function updateAuthBadgeUI() {
             const badge = document.getElementById('gemini-badge');
             const oauthBtnText = document.getElementById('oauth-btn-text');
@@ -1011,12 +957,12 @@
                 oauthBtnText.innerText = "¡Sincronizado con Google!";
                 if (studentProfile) {
                     profileCard.classList.remove('hidden');
-                    document.getElementById('oauth-profile-img').src = studentProfile.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=U';
+                    document.getElementById('oauth-profile-img').src = studentProfile.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=' + studentProfile.name[0];
                     document.getElementById('oauth-profile-name').innerText = studentProfile.name || 'Estudiante';
                     document.getElementById('oauth-profile-email').innerText = studentProfile.email || 'Sincronizado';
                 }
             } else {
-                oauthBtnText.innerText = "Iniciar Sesión de Alumno";
+                oauthBtnText.innerText = "Vincular Cuenta Google";
                 profileCard.classList.add('hidden');
             }
         }
@@ -1030,15 +976,7 @@
             }
         }
 
-        function toggleTeacherModal() {
-            const modal = document.getElementById('teacher-modal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                lucide.createIcons();
-            }
-        }
-
-        // Inicializar el cliente de Google Identity Services con los scopes correctos (Sin el scope conflictivo)
+        // Inicializar el cliente de Google Identity Services (Alcance simplificado sin error 400)
         function initGoogleOAuthClient() {
             if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
                 setTimeout(initGoogleOAuthClient, 1000);
@@ -1048,7 +986,7 @@
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: googleClientId,
-                    scope: 'email profile openid', // Solo scopes públicos necesarios, solucionando error 400
+                    scope: 'email profile openid',
                     callback: (tokenResponse) => {
                         if (tokenResponse.error !== undefined) {
                             console.error("Error en Google Auth:", tokenResponse.error);
@@ -1089,7 +1027,9 @@
             } finally {
                 showToast("¡Cuenta Google vinculada correctamente!", "check", "text-emerald-500");
                 updateAuthBadgeUI();
-                saveProgressToStorage(); // Sincroniza al iniciar sesión
+                
+                // Trata de sincronizar instantáneamente el progreso acumulado tras loguearse
+                syncToGoogleSheets();
                 triggerPrefetch();
             }
         }
@@ -1106,9 +1046,11 @@
             }
         }
 
+        // Guarda configuración general y actualiza base de datos local
         function saveGeminiSettings() {
             const voice = document.getElementById('gemini-voice-select').value;
             const apiKey = document.getElementById('gemini-api-key-input').value.trim();
+            const sheetsUrl = document.getElementById('sheets-url-input').value.trim();
 
             clearAudioCache();
             preferredVoice = voice;
@@ -1117,9 +1059,15 @@
             geminiApiKey = apiKey;
             safeStorage.setItem('gemini_api_key', apiKey);
 
+            googleSheetsUrl = sheetsUrl;
+            safeStorage.setItem('google_sheets_url', sheetsUrl);
+
             updateAuthBadgeUI();
             toggleGeminiModal();
             showToast("Configuración guardada con éxito", "check", "text-emerald-500");
+            
+            // Reintenta sincronización de progreso inmediata con el nuevo endpoint
+            syncToGoogleSheets();
             triggerPrefetch();
         }
 
@@ -1128,17 +1076,20 @@
             googleTokenExpiry = 0;
             studentProfile = null;
             geminiApiKey = '';
+            googleSheetsUrl = '';
             
             safeStorage.removeItem('google_access_token');
             safeStorage.removeItem('google_token_expiry');
             safeStorage.removeItem('google_student_profile');
             safeStorage.removeItem('gemini_api_key');
+            safeStorage.removeItem('google_sheets_url');
             
             document.getElementById('gemini-api-key-input').value = '';
+            document.getElementById('sheets-url-input').value = '';
             
             clearAudioCache();
             updateAuthBadgeUI();
-            saveProgressToStorage(); // Actualizar estado de nube
+            updateSyncStatusUI('local', 'Auto Local');
             showToast("Se han limpiado todas las configuraciones.", "info", "text-blue-500");
             toggleGeminiModal();
         }
@@ -1842,7 +1793,6 @@
         // Vincular funciones globales seguras al objeto window para invocaciones inline onclick
         window.toggleDarkMode = toggleDarkMode;
         window.toggleGeminiModal = toggleGeminiModal;
-        window.toggleTeacherModal = toggleTeacherModal;
         window.loginWithGoogleOAuth = loginWithGoogleOAuth;
         window.saveGeminiSettings = saveGeminiSettings;
         window.clearGeminiSettings = clearGeminiSettings;
