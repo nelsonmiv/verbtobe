@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English A1 - To Be & Present Continuous</title>
+    <title>English A1 - To Be & Present Continuous Practice Center</title>
+    
+    <!-- CSP Guardrail: Permite la conexión a Google Apps Script y APIs de Google -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://accounts.google.com https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://generativelanguage.googleapis.com; img-src 'self' data: https://lh3.googleusercontent.com https://images.unsplash.com; frame-src https://accounts.google.com;">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,30 +16,11 @@
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b',
+                        darkBg: '#090d16',
+                        darkCard: '#111827',
                         accentBlue: '#3b82f6',
                         accentGreen: '#10b981',
-                        accentPurple: '#a855f7',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        pulseOnce: {
-                            '0%, 100%': { transform: 'scale(1)' },
-                            '50%': { transform: 'scale(1.02)' },
-                        },
-                        bounceOnce: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-4px)' },
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out forwards',
-                        'pulse-once': 'pulseOnce 0.6s ease-in-out 1',
-                        'bounce-once': 'bounceOnce 0.6s ease-in-out 1'
+                        accentPurple: '#8b5cf6'
                     }
                 }
             }
@@ -43,1734 +28,668 @@
     </script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Identity Services para OAuth 2.0 -->
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
 
     <!-- APP CONTAINER -->
-    <div id="app" class="max-w-6xl mx-auto px-4 py-6 pb-24">
+    <div id="app" class="max-w-7xl mx-auto px-4 py-6 pb-24">
         
         <!-- HEADER -->
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
             <div>
-                <h1 class="text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-emerald-400 bg-clip-text text-transparent">
-                    English A1 Master
+                <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 flex items-center gap-2">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-blue-500"></i> English Learning Center
                 </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Practica el Verbo To Be y el Present Continuous con Inteligencia Artificial</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-1">Nivel A1: Verb To Be & Present Continuous - Control de Progreso Automático</p>
             </div>
             
-            <!-- CONTROLES GLOBALES -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Configuración Gemini API / Google OAuth -->
-                <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
-                    <span>Configuración</span>
-                    <span id="gemini-badge" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                </button>
-
-                <!-- Guardado en la nube / Local info (ESTADO DINÁMICO) -->
-                <div id="sync-status-badge" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-850 transition-all duration-300">
-                    <i id="sync-icon" data-lucide="database" class="w-3.5 h-3.5"></i>
-                    <span id="sync-status-text">Guardado Local</span>
+                <!-- Sync Badge Status -->
+                <div id="sync-status" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all">
+                    <span id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span id="sync-text">Sin Identificar</span>
                 </div>
 
-                <!-- Botón Modo Oscuro -->
-                <button onclick="toggleDarkMode()" class="p-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg transition-all" aria-label="Cambiar modo de luz">
-                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-yellow-400"></i>
-                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-700"></i>
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-darkCard shadow-sm border border-slate-200 dark:border-slate-800">
+                    <i data-lucide="sun" id="theme-icon" class="w-5 h-5 text-yellow-500"></i>
                 </button>
             </div>
         </header>
 
-        <!-- PROGRESS BAR GENERAL -->
-        <section class="bg-white dark:bg-darkCard rounded-2xl p-5 mb-8 shadow-sm border border-slate-100 dark:border-slate-800 animate-fade-in">
-            <h2 class="text-md font-bold mb-3 flex items-center gap-2">
-                <i data-lucide="trophy" class="text-yellow-500 w-5 h-5"></i>
-                Tu Progreso General (A1)
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                    <div class="text-xs text-slate-500 mb-1">Sección 1: Afirmativas y Negativas</div>
-                    <div class="font-bold text-lg" id="prog-s1">0 / 50</div>
-                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-s1" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                    <div class="text-xs text-slate-500 mb-1">Sección 2: Shadowing de Voz</div>
-                    <div class="font-bold text-lg" id="prog-s2">0 / 50</div>
-                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-s2" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                    <div class="text-xs text-slate-500 mb-1">Sección 3: Reverse Questions</div>
-                    <div class="font-bold text-lg" id="prog-s3">0 / 50</div>
-                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-s3" class="bg-purple-500 h-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400">
-                <span id="global-percentage">Progreso Total: 0%</span>
-                <button onclick="requestResetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1 transition-colors hover:text-red-600">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Reiniciar Progreso
-                </button>
-            </div>
-        </section>
-
-        <!-- NAVEGACIÓN DE SECCIONES -->
-        <nav class="flex flex-wrap gap-2 mb-8 justify-center">
-            <button onclick="switchTab('tab1')" id="btn-tab1" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-blue-500 text-white">
-                <i data-lucide="check-square" class="w-4 h-4"></i>
-                1. Afirmativas / Negativas
-            </button>
-            <button onclick="switchTab('tab2')" id="btn-tab2" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                <i data-lucide="mic" class="w-4 h-4"></i>
-                2. Shadowing Activo
-            </button>
-            <button onclick="switchTab('tab3')" id="btn-tab3" class="nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-                <i data-lucide="help-circle" class="w-4 h-4"></i>
-                3. Reverse Questions
-            </button>
-        </nav>
-
-        <!-- SECCIÓN DE TRABAJO -->
-        <main class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 shadow-md border border-slate-100 dark:border-slate-800/80 min-h-[450px] relative font-sans">
+        <!-- MAIN GRID LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- NAVEGADOR INTERNO DE EJERCICIOS (1 A 50) -->
-            <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/50">
-                <div class="flex items-center gap-3">
-                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Preguntas</span>
-                    <select id="exercise-selector" onchange="jumpToExercise(this.value)" class="bg-slate-100 dark:bg-slate-800 text-sm font-semibold py-1.5 px-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <!-- Generado dinámicamente -->
-                    </select>
-                </div>
+            <!-- LEFT COLUMN: SETTINGS, LOGIN & ASSISTANT (4 Cols) -->
+            <div class="lg:col-span-4 space-y-6">
                 
-                <div class="flex items-center gap-2">
-                    <button onclick="prevExercise()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all" title="Anterior">
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
-                    <span id="current-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono font-bold">1 / 50</span>
-                    <button onclick="nextExercise()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all" title="Siguiente">
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- CONTENIDO DE LAS PESTAÑAS -->
-            
-            <!-- PESTAÑA 1: AFIRMATIVAS Y NEGATIVAS -->
-            <div id="tab1-content" class="tab-pane active-pane">
-                <div class="space-y-6 animate-fade-in">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
-                            Completa los Espacios / Gramática A1
-                        </span>
-                        <!-- INDICADOR DE TIPO (AFIRMATIVA / NEGATIVA) -->
-                        <span id="s1-type-badge" class="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                            <!-- Inyectado dinámicamente -->
-                        </span>
-                    </div>
-
-                    <div>
-                        <h3 class="text-xl md:text-2xl font-bold mt-2 text-slate-900 dark:text-white" id="s1-prompt">
-                            Cargando ejercicio...
-                        </h3>
-                        <p class="text-sm text-slate-500 mt-2" id="s1-translation">Traducción cargando...</p>
-                    </div>
-
-                    <!-- OPCIÓN DE ESCUCHAR ENUNCIADO -->
-                    <div class="flex items-center gap-3">
-                        <button onclick="speakCurrentSentence()" class="flex items-center gap-2 px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-semibold transition-all">
-                            <i data-lucide="volume-2" class="w-4 h-4"></i> Escuchar Frase Completa
+                <!-- PROFILE & LOGIN SECTION -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
+                        <i data-lucide="user-check" class="text-blue-500 w-5 h-5"></i> Identificación del Alumno
+                    </h3>
+                    
+                    <!-- Pre-login Form -->
+                    <div id="login-form-box" class="space-y-4">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Introduce tus datos para que el profesor pueda evaluar tu avance en su hoja de cálculo.</p>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nombre Completo</label>
+                            <input type="text" id="student-name" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Juan Pérez">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Correo Electrónico</label>
+                            <input type="email" id="student-email" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. juan@gmail.com">
+                        </div>
+                        <button onclick="guardarIdentidadLocal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="log-in" class="w-4 h-4"></i> Guardar y Conectar
                         </button>
                     </div>
 
-                    <!-- CAJA DE RESPUESTA / ENTRADA -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Escribe la palabra faltante u oración completa:</label>
-                            <span class="text-xs text-slate-400 italic font-medium">¡Se permite escribir toda la frase!</span>
-                        </div>
-                        <div class="relative">
-                            <input type="text" id="s1-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg text-slate-900 dark:text-white" placeholder="Ej: isn't / They aren't studying tonight" autocomplete="off">
-                            <button onclick="startListening('s1-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-blue-500 transition-all" title="Dictar respuesta">
-                                <i data-lucide="mic" id="mic-s1-input" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <p id="dictation-status-s1-input" class="text-xs text-blue-500 hidden italic">Escuchando... Habla ahora.</p>
-                    </div>
-
-                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
-                    <div class="flex items-center gap-4 pt-2">
-                        <button id="s1-action-btn" onclick="checkSection1Answer()" class="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
-                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                            <span>Verificar Respuesta</span>
-                        </button>
-                    </div>
-
-                    <!-- CAJA DE RETROALIMENTACIÓN -->
-                    <div id="s1-feedback" class="hidden rounded-2xl p-4 border transition-all">
-                        <!-- Dinámico -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- PESTAÑA 2: SHADOWING ACTIVO -->
-            <div id="tab2-content" class="tab-pane hidden">
-                <div class="space-y-6 animate-fade-in">
-                    <div>
-                        <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-semibold">
-                            Análisis de Pronunciación y Práctica Auditiva
-                        </span>
-                        <h3 class="text-xl md:text-2xl font-bold mt-3 text-slate-900 dark:text-white" id="s2-prompt">
-                            Cargando frase...
-                        </h3>
-                        <p class="text-sm text-slate-500 mt-2" id="s2-translation">Traducción cargando...</p>
-                    </div>
-
-                    <!-- REPRODUCTORES Y GUÍA -->
-                    <div class="p-5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-800/80 space-y-4">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-bold text-slate-400 uppercase">Paso 1:</span>
-                                <span class="text-sm font-medium">Escucha el audio nativo</span>
+                    <!-- Post-login View -->
+                    <div id="profile-box" class="hidden flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold" id="profile-avatar">
+                                U
                             </div>
-                            <button onclick="speakShadowingSentence()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm animate-pulse-once">
-                                <i data-lucide="volume-2" class="w-4.5 h-4.5"></i> Escuchar Pronunciación
-                            </button>
-                        </div>
-                        <div class="border-t border-slate-100 dark:border-slate-800/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs font-bold text-slate-400 uppercase">Paso 2:</span>
-                                <span class="text-sm font-medium">Graba tu voz imitando el ritmo</span>
-                            </div>
-                            <button onclick="startShadowingRecording()" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                                <i data-lucide="mic" id="mic-shadow" class="w-4.5 h-4.5"></i> <span id="btn-shadow-text">Grabar mi Voz</span>
-                            </button>
-                        </div>
-                        <p id="dictation-status-shadow" class="text-xs text-red-500 hidden italic text-center">Grabando tu voz... Di la frase en inglés fuerte y claro.</p>
-                    </div>
-
-                    <!-- ANÁLISIS COMPARATIVO -->
-                    <div id="shadowing-analysis-box" class="hidden bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 space-y-3">
-                        <h4 class="font-bold text-md flex items-center gap-2">
-                            <i data-lucide="activity" class="text-emerald-500"></i> Análisis Comparativo de Pronunciación
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white dark:bg-darkBg p-3 rounded-xl border border-slate-200/50 dark:border-slate-800">
-                                <span class="text-xs text-slate-400 font-bold block mb-1">Tu Audio Dictado:</span>
-                                <span class="text-md font-semibold font-mono" id="user-said-text">...</span>
-                            </div>
-                            <div class="bg-white dark:bg-darkBg p-3 rounded-xl border border-slate-200/50 dark:border-slate-800 flex flex-col justify-center">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs text-slate-400 font-bold block">Puntaje de Similitud:</span>
-                                    <span class="text-lg font-black text-emerald-500" id="pronunciation-score">0%</span>
-                                </div>
-                                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
-                                    <div id="score-bar" class="h-full bg-emerald-500 transition-all" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <p id="pronunciation-feedback-text" class="text-sm mt-2 text-slate-600 dark:text-slate-300 italic"></p>
-                    </div>
-
-                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
-                    <div class="flex items-center gap-4">
-                        <button id="s2-action-btn" onclick="completeShadowing()" class="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
-                            <i data-lucide="check-circle" class="w-5 h-5"></i>
-                            <span>Marcar como Completado</span>
-                        </button>
-                    </div>
-
-                    <div id="s2-feedback" class="hidden rounded-2xl p-4 border transition-all">
-                        <!-- Comentarios inmediatos -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- PESTAÑA 3: REVERSE QUESTIONS -->
-            <div id="tab3-content" class="tab-pane hidden">
-                <div class="space-y-6 animate-fade-in">
-                    <div>
-                        <span class="px-3 py-1 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded-full text-xs font-semibold">
-                            Estructura Gramatical Invertida (Preguntas)
-                        </span>
-                        <div class="flex items-start gap-3 mt-3">
                             <div>
-                                <h4 class="text-xs text-slate-400 font-bold uppercase">Respuesta dada:</h4>
-                                <h3 class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1" id="s3-prompt">
-                                    Cargando respuesta...
-                                </h3>
-                                <p class="text-sm text-slate-500 mt-2" id="s3-translation">Traducción cargando...</p>
+                                <h4 id="profile-name" class="font-bold text-sm text-slate-900 dark:text-white">Estudiante</h4>
+                                <p id="profile-email" class="text-xs text-slate-500">estudiante@correo.com</p>
+                            </div>
+                        </div>
+                        <button onclick="logoutEstudiante()" class="p-1.5 hover:bg-red-100 dark:hover:bg-red-950/40 text-red-500 rounded-lg transition-colors" title="Cerrar sesión">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GOOGLE AI STUDIO / API KEY TUTORIAL -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2 text-slate-900 dark:text-white">
+                        <i data-lucide="key-round" class="text-purple-500 w-5 h-5"></i> Clave API de Google AI Studio
+                    </h3>
+                    
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                        Para conversar con el tutor de IA sin límites, obtén tu propia clave API gratuita siguiendo estos pasos:
+                    </p>
+
+                    <!-- Tutorial Steps -->
+                    <div class="space-y-3 mb-4">
+                        <div class="flex gap-2 text-xs">
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">1</div>
+                            <div>
+                                Entra en <a href="https://aistudio.google.com/" target="_blank" class="text-blue-500 hover:underline font-semibold flex items-center gap-0.5 inline-flex">Google AI Studio <i data-lucide="external-link" class="w-3 h-3"></i></a> e inicia sesión con tu cuenta de Google.
+                            </div>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">2</div>
+                            <div>
+                                Haz clic en el botón azul grande que dice <strong>"Get API Key"</strong> (Obtener Clave API).
+                            </div>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <div class="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">3</div>
+                            <div>
+                                Copia la clave generada (empieza por "AIzaSy...") y pégala aquí abajo.
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-4 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
-                        <span class="text-xs font-bold text-purple-500 block mb-1">Tu Reto Gramatical:</span>
-                        <p class="text-sm text-slate-600 dark:text-slate-300">
-                            Escribe o dicta la <strong>pregunta en inglés</strong> correcta para la respuesta mostrada arriba. Recuerda el orden de palabras para preguntas con <em>To Be</em> o <em>Present Continuous</em>.
+                    <div class="relative">
+                        <input type="password" id="api-key-input" class="w-full pl-3 pr-10 py-2.5 text-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500" placeholder="Pega tu API Key AIzaSy...">
+                        <button onclick="togglePasswordVisibility('api-key-input')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                            <i data-lucide="eye" class="w-4 h-4" id="toggle-key-eye"></i>
+                        </button>
+                    </div>
+                    <button onclick="guardarApiKey()" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> Validar y Guardar Key
+                    </button>
+                </div>
+
+                <!-- PROGRESS SYNC SUMMARY -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h3 class="font-bold text-lg mb-3 flex items-center gap-2 text-slate-900 dark:text-white">
+                        <i data-lucide="line-chart" class="text-emerald-500 w-5 h-5"></i> Reporte del Estudiante
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span>1. Verb To Be</span>
+                                <span id="p-tobe-txt">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="p-tobe-bar" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span>2. Present Continuous</span>
+                                <span id="p-continuous-txt">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="p-continuous-bar" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span>3. AI Chat Evaluation</span>
+                                <span id="p-chat-txt">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div id="p-chat-bar" class="bg-purple-500 h-full w-0 transition-all duration-500"></div>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <span class="text-sm font-bold">Progreso Promedio:</span>
+                            <span id="p-total-badge" class="px-2.5 py-1 text-xs font-black rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: INTERACTIVE LECTIONS & EXERCISES (8 Cols) -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- SECTION 1: VERB TO BE -->
+                <section class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h2 class="text-xl font-bold mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <span class="flex items-center gap-2 text-slate-900 dark:text-white">
+                            <span class="w-2.5 h-6 bg-blue-500 rounded-full"></span> 1. Verb To Be (A1)
+                        </span>
+                        <span class="text-xs bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full font-bold">Ejercicios interactivos</span>
+                    </h2>
+
+                    <!-- Inputs & dynamic correction -->
+                    <div class="space-y-5">
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                                    Pregunta 1: She <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded ml-2 font-mono">to be</span> a doctor.
+                                </label>
+                                <span id="q1-feedback" class="text-xs font-bold transition-all"></span>
+                            </div>
+                            <input type="text" id="q1-input" oninput="comprobarPregunta('q1', 'is')" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="Escribe tu respuesta...">
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                                    Pregunta 2: They <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded ml-2 font-mono">to be</span> happy today.
+                                </label>
+                                <span id="q2-feedback" class="text-xs font-bold transition-all"></span>
+                            </div>
+                            <input type="text" id="q2-input" oninput="comprobarPregunta('q2', 'are')" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="Escribe tu respuesta...">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: PRESENT CONTINUOUS -->
+                <section class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h2 class="text-xl font-bold mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <span class="flex items-center gap-2 text-slate-900 dark:text-white">
+                            <span class="w-2.5 h-6 bg-indigo-500 rounded-full"></span> 2. Present Continuous (A1)
+                        </span>
+                        <span class="text-xs bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full font-bold">Grammar check</span>
+                    </h2>
+
+                    <div class="space-y-5">
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                                    Pregunta 3: Right now, he <span class="text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded ml-2 font-mono">write</span> a poem.
+                                </label>
+                                <span id="q3-feedback" class="text-xs font-bold transition-all"></span>
+                            </div>
+                            <input type="text" id="q3-input" oninput="comprobarPregunta('q3', 'is writing')" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="Escribe tu respuesta (ej: is playing)...">
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                                    Pregunta 4: We <span class="text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded ml-2 font-mono">study</span> for the test together.
+                                </label>
+                                <span id="q4-feedback" class="text-xs font-bold transition-all"></span>
+                            </div>
+                            <input type="text" id="q4-input" oninput="comprobarPregunta('q4', 'are studying')" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" placeholder="Escribe tu respuesta...">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: TUTOR DE IA (CONEXIÓN DIRECTA) -->
+                <section class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-md border border-slate-200/60 dark:border-slate-800/80">
+                    <h2 class="text-xl font-bold mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <span class="flex items-center gap-2 text-slate-900 dark:text-white">
+                            <span class="w-2.5 h-6 bg-purple-500 rounded-full"></span> 3. Chat Práctica Libre con IA (Gemini)
+                        </span>
+                        <span class="text-xs bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-3 py-1 rounded-full font-bold">Feedback instantáneo</span>
+                    </h2>
+
+                    <!-- Prompt Instruction -->
+                    <div class="mb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-purple-50 dark:bg-purple-950/20 p-4 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                        <p class="font-semibold text-purple-700 dark:text-purple-400 flex items-center gap-1.5 mb-1">
+                            <i data-lucide="info" class="w-4 h-4"></i> Instrucción del Ejercicio:
                         </p>
+                        Escribe una frase larga utilizando el verbo <strong>To Be</strong> o el <strong>Present Continuous</strong> para contar lo que estás haciendo hoy. El Tutor de IA validará tu ortografía y gramática en inglés y te dará consejos inmediatos.
                     </div>
 
-                    <!-- CAJA DE RESPUESTA / ENTRADA -->
-                    <div class="space-y-3">
-                        <label id="s3-input-label" class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Tu pregunta formulada:</label>
-                        <div class="relative">
-                            <input type="text" id="s3-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-lg text-slate-900 dark:text-white" placeholder="Ej: Are you studying english? / Is he running?" autocomplete="off">
-                            <button onclick="startListening('s3-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-purple-500 transition-all" title="Dictar respuesta">
-                                <i data-lucide="mic" id="mic-s3-input" class="w-5 h-5"></i>
+                    <!-- Input message box -->
+                    <div class="space-y-4">
+                        <textarea id="ai-user-message" rows="3" class="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400" placeholder="Ej: Today I am studying English grammar at my desk because I want to travel..."></textarea>
+                        
+                        <div class="flex justify-between items-center gap-3">
+                            <p class="text-xs text-slate-400 dark:text-slate-500">Cada mensaje enviado cuenta para tu progreso de conversación.</p>
+                            <button id="send-ai-btn" onclick="consultarTutorIA()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i> Enviar a Tutor IA
                             </button>
                         </div>
-                        <p id="dictation-status-s3-input" class="text-xs text-purple-500 hidden italic">Escuchando... Habla ahora.</p>
-                    </div>
 
-                    <!-- BOTÓN DE VERIFICACIÓN / ACCIÓN -->
-                    <div class="flex items-center gap-4 pt-2">
-                        <button id="s3-action-btn" onclick="checkSection3Answer()" class="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2">
-                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                            <span>Verificar Pregunta</span>
-                        </button>
-                    </div>
-
-                    <!-- CAJA DE RETROALIMENTACIÓN -->
-                    <div id="s3-feedback" class="hidden rounded-2xl p-4 border transition-all">
-                        <!-- Dinámico -->
-                    </div>
-                </div>
-            </div>
-
-        </main>
-
-        <!-- FOOTER NAV / FOOTNOTE -->
-        <footer class="mt-8 text-center text-xs text-slate-400 space-y-2">
-            <p>Hecho con pasión para estudiantes de nivel A1 de inglés.</p>
-            <p>Utiliza navegadores modernos como Google Chrome, Microsoft Edge o Safari para una experiencia completa de reconocimiento y síntesis de voz.</p>
-        </footer>
-    </div>
-
-    <!-- MODAL DE CONFIGURACIÓN CON GUÍA PARA API KEY GRATUITA Y GOOGLE SHEETS -->
-    <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in font-sans">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="sparkles" class="w-6 h-6 text-purple-500 animate-pulse"></i>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Panel de Configuración</h3>
-                </div>
-                <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <!-- PASO 1: VINCULAR CUENTA DE GOOGLE (OAUTH LIMPIO) -->
-            <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] font-bold">1</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identificación de Estudiante</h4>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Inicia sesión de forma segura para cargar tu nombre y habilitar la sincronización de tu progreso directamente en la tabla de tu profesor.
-                </p>
-
-                <!-- BOTON DE CONECTAR CON GOOGLE -->
-                <div class="pt-1">
-                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-xs transition-all shadow-sm">
-                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.57-5.17 3.57-8.73z"/>
-                            <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.13 0-5.78-2.11-6.73-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/>
-                            <path fill="#FBBC05" d="M5.27 14.24A7.16 7.16 0 0 1 5 12c0-.79.13-1.57.38-2.31V6.54H1.21A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.21 5.46l4.06-3.22z"/>
-                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.18 2.12 1.21 5.7l4.06 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
-                        </svg>
-                        <span id="oauth-btn-text">Vincular Cuenta Google</span>
-                    </button>
-                    <!-- ESTADO DEL PERFIL CONECTADO -->
-                    <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 mt-2">
-                        <img id="oauth-profile-img" src="" class="w-8 h-8 rounded-full border border-purple-400 object-cover" alt="Perfil">
-                        <div class="overflow-hidden">
-                            <p id="oauth-profile-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Estudiante</p>
-                            <p id="oauth-profile-email" class="text-[9px] text-slate-400 truncate">Sincronizado</p>
+                        <!-- Response Screen -->
+                        <div id="ai-response-box" class="hidden p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-sm space-y-2">
+                            <p class="font-bold text-xs text-slate-400 flex items-center gap-1">
+                                <i data-lucide="bot" class="w-4 h-4"></i> FEEDBACK DEL TUTOR DE IA:
+                            </p>
+                            <div id="ai-response-text" class="text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                                Esperando respuesta...
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
+
             </div>
 
-            <!-- PASO 2: OBTENER API KEY DE GEMINI -->
-            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold">2</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Voz IA de Gemini (100% Gratis)</h4>
-                </div>
-                
-                <div class="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20 space-y-2 text-xs">
-                    <p class="font-semibold text-purple-700 dark:text-purple-300">Sigue estos rápidos pasos para habilitar el sintetizador de voz nativo:</p>
-                    <ol class="list-decimal pl-4 space-y-1.5 text-slate-600 dark:text-slate-300">
-                        <li>Entra en <a href="https://aistudio.google.com/" target="_blank" class="text-blue-500 font-bold hover:underline inline-flex items-center gap-0.5">Google AI Studio <i data-lucide="external-link" class="w-3 h-3"></i></a> e inicia sesión con tu Gmail.</li>
-                        <li>Haz clic en el botón azul arriba a la izquierda: **"Get API key"** (Obtener clave API).</li>
-                        <li>Haz clic en **"Create API key"**, copia el código (`AIzaSy...`) y pégalo abajo.</li>
-                    </ol>
-                </div>
-
-                <!-- CAMPO CLAVE API -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold uppercase text-slate-400">Pegar Clave API de Gemini</label>
-                    <div class="relative">
-                        <input type="password" id="gemini-api-key-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none font-mono" placeholder="AIzaSy...">
-                        <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-350" title="Mostrar/Ocultar">
-                            <i id="key-visibility-icon" data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PASO 3: CONFIGURAR GOOGLE SHEETS DEL PROFESOR -->
-            <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">3</span>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Guardado en Google Sheets del Profesor</h4>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Introduce el enlace de Google Apps Script creado por tu profesor para reportar tu progreso en tiempo real de forma automática.
-                </p>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold uppercase text-slate-400">URL del Web App (Apps Script)</label>
-                    <input type="text" id="sheets-url-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" placeholder="https://script.google.com/macros/s/.../exec">
-                </div>
-            </div>
-
-            <!-- SELECCIONADOR DE VOZ -->
-            <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
-                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
-                    <option value="Kore">Kore (Voz Clara Estándar)</option>
-                    <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
-                    <option value="Charon">Charon (Tono Profundo)</option>
-                    <option value="Leda">Leda (Femenino Suave)</option>
-                    <option value="Puck">Puck (Juvenil)</option>
-                </select>
-            </div>
-
-            <!-- BOTONES DE ACCIÓN GENERAL -->
-            <div class="flex gap-3 pt-2">
-                <button onclick="saveGeminiSettings()" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs transition-all shadow-md">
-                    Guardar Configuración
-                </button>
-                <button onclick="clearGeminiSettings()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-xs transition-all">
-                    Restablecer
-                </button>
-            </div>
         </div>
-    </div>
 
-    <!-- MODAL DE CONFIRMACIÓN MODERNO -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-center font-sans">
-            <div class="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="confirm-title">¿Estás seguro?</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400" id="confirm-desc">Esta acción no se puede deshacer.</p>
-            <div class="flex gap-3 pt-2">
-                <button id="confirm-btn-yes" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs transition-all shadow-md">Sí, reiniciar</button>
-                <button onclick="closeConfirmModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs transition-all border border-slate-200 dark:border-slate-700">Cancelar</button>
-            </div>
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast-notif" class="fixed bottom-6 right-6 flex items-center gap-3 bg-white dark:bg-darkCard px-4 py-3 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+            <span id="toast-icon"></span>
+            <p id="toast-text" class="text-sm font-semibold"></p>
         </div>
+
     </div>
 
-    <!-- NOTIFICACIÓN FLOTANTE -->
-    <div id="toast-notif" class="fixed bottom-6 right-6 bg-slate-900 dark:bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-sm">
-        <i data-lucide="info" class="w-5 h-5 text-blue-400" id="toast-icon"></i>
-        <span id="toast-text">Notificación de ejemplo</span>
-    </div>
-
-    <!-- SCRIPTS DE DATOS (50 Ejercicios por Sección) -->
+    <!-- CORE SCRIPTS AND SCRIPT CONNECTOR -->
     <script>
-        // Sección 1: Ejercicios de Afirmativo y Negativo (To Be y Present Continuous)
-        const s1Exercises = [
-            { id: 1, prompt: "I ___ a student.", translation: "Yo soy un estudiante.", solution: "am", context: "Usamos 'am' con el pronombre 'I' en presente.", type: "Afirmativa" },
-            { id: 2, prompt: "She ___ playing soccer right now.", translation: "Ella está jugando fútbol ahora mismo.", solution: "is", context: "Present Continuous: 'She is' + verbo con -ing.", type: "Afirmativa" },
-            { id: 3, prompt: "They ___ studying tonight.", translation: "Ellos no están estudiando esta noche.", solution: "aren't", context: "Present Continuous Negativo (con contracción): 'They aren't studying'.", type: "Negativa" },
-            { id: 4, prompt: "We ___ happy today.", translation: "Nosotros estamos felices hoy.", solution: "are", context: "Usamos 'are' con el pronombre 'We'.", type: "Afirmativa" },
-            { id: 5, prompt: "He ___ eating an apple.", translation: "Él está comiendo una manzana.", solution: "is", context: "Present Continuous: 'He is' + eating.", type: "Afirmativa" },
-            { id: 6, prompt: "It ___ a very nice dog.", translation: "Es un perro muy lindo.", solution: "is", context: "Usamos 'is' para el pronombre singular impersonal 'It'.", type: "Afirmativa" },
-            { id: 7, prompt: "You ___ my best friend.", translation: "Tú eres mi mejor amigo.", solution: "are", context: "Usamos 'are' con 'You'.", type: "Afirmativa" },
-            { id: 8, prompt: "The sun ___ shining beautifully.", translation: "El sol está brillando hermosamente.", solution: "is", context: "El sol (it) es singular, por lo tanto usamos 'is'.", type: "Afirmativa" },
-            { id: 9, prompt: "I ___ listening to music.", translation: "Yo no estoy escuchando música.", solution: "am not", context: "Negativo de To Be: Para 'I', la única contracción posible es combinándolo con el pronombre (I'm not), por lo que en el espacio en blanco se responde 'am not'.", type: "Negativa" },
-            { id: 10, prompt: "Cats ___ sleeping on the bed.", translation: "Los gatos están durmiendo en la cama.", solution: "are", context: "Plural (Cats = They), por ende usamos 'are'.", type: "Afirmativa" },
-            { id: 11, prompt: "She ___ studying English, she is resting.", translation: "Ella no está estudiando inglés, está descansando.", solution: "isn't", context: "Sección negativa (con contracción): 'isn't' para el sujeto singular 'she'.", type: "Negativa" },
-            { id: 12, prompt: "We ___ learning a lot in this class.", translation: "Nosotros estamos aprendiendo mucho en esta clase.", solution: "are", context: "Present Continuous para 'We': usamos 'are'.", type: "Afirmativa" },
-            { id: 13, prompt: "The train ___ arriving now.", translation: "El tren está llegando ahora.", solution: "is", context: "El tren (it) es singular, se usa 'is' para continuous.", type: "Afirmativa" },
-            { id: 14, prompt: "You ___ doing a great job.", translation: "Tú estás haciendo un gran trabajo.", solution: "are", context: "Present Continuous para 'You' requiere el auxiliar 'are'.", type: "Afirmativa" },
-            { id: 15, prompt: "I ___ wearing a warm jacket.", translation: "Estoy usando una chaqueta abrigada.", solution: "am", context: "Present Continuous: 'I am wearing'.", type: "Afirmativa" },
-            { id: 16, prompt: "My parents ___ working today.", translation: "Mis parents están trabajando hoy.", solution: "are", context: "Mis padres (They) son plurales, usamos 'are'.", type: "Afirmativa" },
-            { id: 17, prompt: "The baby ___ crying, she is hungry.", translation: "El bebé está llorando, tiene hambre.", solution: "is", context: "El bebé (singular), usamos 'is'.", type: "Afirmativa" },
-            { id: 18, prompt: "It ___ raining outside.", translation: "Está lloviendo afuera.", solution: "is", context: "Clima/Tiempo 'It is raining'.", type: "Afirmativa" },
-            { id: 19, prompt: "My room ___ clean.", translation: "Mi cuarto está limpio.", solution: "is", context: "El cuarto (it) es singular, requiere 'is'.", type: "Afirmativa" },
-            { id: 20, prompt: "You ___ paying attention.", translation: "No estás prestando atención.", solution: "aren't", context: "Negación para 'you' (con contracción): 'you aren't'.", type: "Negativa" },
-            { id: 21, prompt: "They ___ playing video games.", translation: "Ellos están jugando videojuegos.", solution: "are", context: "Para 'They' usamos 'are' en Present Continuous.", type: "Afirmativa" },
-            { id: 22, prompt: "The teacher ___ explaining the grammar.", translation: "El profesor está explicando la gramática.", solution: "is", context: "El profesor (He/She) es singular, requiere 'is'.", type: "Afirmativa" },
-            { id: 23, prompt: "We ___ watching TV, we are reading.", translation: "No estamos viendo televisión, estamos leyendo.", solution: "aren't", context: "Negación en plural (con contracción): 'we aren't'.", type: "Negativa" },
-            { id: 24, prompt: "I ___ very tired tonight.", translation: "Estoy muy cansado esta noche.", solution: "am", context: "Sentimiento/Estado con 'I': usamos 'am'.", type: "Afirmativa" },
-            { id: 25, prompt: "He ___ running in the park.", translation: "Él está corriendo en el parque.", solution: "is", context: "Acción en progreso para 'He': 'is running'.", type: "Afirmativa" },
-            { id: 26, prompt: "The birds ___ flying south.", translation: "Los pájaros están volando al sur.", solution: "are", context: "Pájaros (They) son plurales, usamos 'are'.", type: "Afirmativa" },
-            { id: 27, prompt: "This soup ___ delicious.", translation: "Esta sopa está deliciosa.", solution: "is", context: "Sopa (singular), usamos el verbo 'is'.", type: "Afirmativa" },
-            { id: 28, prompt: "You ___ my favorite student.", translation: "Tú eres mi estudiante favorito.", solution: "are", context: "Verbo to be para 'You' es 'are'.", type: "Afirmativa" },
-            { id: 29, prompt: "They ___ at home today.", translation: "Ellos no están en casa hoy.", solution: "aren't", context: "Negativo de ubicación para 'They' (con contracción): 'They aren't'.", type: "Negativa" },
-            { id: 30, prompt: "I ___ writing a novel.", translation: "Estoy escribiendo una novela.", solution: "am", context: "Acción en progreso con 'I': 'am writing'.", type: "Afirmativa" },
-            { id: 31, prompt: "She ___ wearing a red dress.", translation: "Ella está usando un vestido rojo.", solution: "is", context: "Uso de 'is' para tercera persona singular en Present Continuous.", type: "Afirmativa" },
-            { id: 32, prompt: "We ___ buying some fresh bread.", translation: "Estamos comprando algo de pan fresco.", solution: "are", context: "Present Continuous para 'We': requiere 'are'.", type: "Afirmativa" },
-            { id: 33, prompt: "The computer ___ working fine now.", translation: "La computadora está funcionando bien ahora.", solution: "is", context: "La computadora (it), requiere 'is'.", type: "Afirmativa" },
-            { id: 34, prompt: "It ___ hot today, it is windy.", translation: "No está caluroso hoy, está ventoso.", solution: "isn't", context: "Clima en negativo con contracción: 'it isn't'.", type: "Negativa" },
-            { id: 35, prompt: "The keys ___ on the kitchen table.", translation: "Las llaves están sobre la mesa de la cocina.", solution: "are", context: "Las llaves (Plural) requiere 'are'.", type: "Afirmativa" },
-            { id: 36, prompt: "My brother ___ riding his bicycle.", translation: "Mi hermano está montando su bicicleta.", solution: "is", context: "Hermano (He) requiere el auxiliar 'is'.", type: "Afirmativa" },
-            { id: 37, prompt: "I ___ making dinner, I ordered pizza.", translation: "No estoy haciendo la cena, pedí pizza.", solution: "am not", context: "Negación para primera persona singular: 'I am not'.", type: "Negativa" },
-            { id: 38, prompt: "You and I ___ studying together.", translation: "Tú y yo estamos estudiando juntos.", solution: "are", context: "Tú y yo equivale a 'We' (Nosotros), usamos 'are'.", type: "Afirmativa" },
-            { id: 39, prompt: "They ___ cooking delicious pasta.", translation: "Ellos están cocinando pasta de forma deiciosa.", solution: "are", context: "Sujeto 'They' utiliza 'are'.", type: "Afirmativa" },
-            { id: 40, prompt: "The dog ___ barking at the cat.", translation: "El perro está ladrándole al gato.", solution: "is", context: "Perro (singular) requiere 'is' para continuous.", type: "Afirmativa" },
-            { id: 41, prompt: "We ___ going to the beach.", translation: "Nosotros no vamos a ir a la playa.", solution: "aren't", context: "Negativo con contracción de Present Continuous para 'We': 'we aren't going'.", type: "Negativa" },
-            { id: 42, prompt: "She ___ an excellent doctor.", translation: "Ella es una excelente doctora.", solution: "is", context: "Profesión con To Be para 'She': usamos 'is'.", type: "Afirmativa" },
-            { id: 43, prompt: "I ___ drinking fresh water.", translation: "Estoy bebiendo agua fresca.", solution: "am", context: "Acción en progreso con 'I': 'am drinking'.", type: "Afirmativa" },
-            { id: 44, prompt: "My friends ___ traveling to Rome.", translation: "Mis amigos están viajando a Roma.", solution: "are", context: "Sujeto plural requiere 'are' en Present Continuous.", type: "Afirmativa" },
-            { id: 45, prompt: "This book ___ very interesting.", translation: "Este libro está muy interesante.", solution: "is", context: "Libro (it) requiere 'is'.", type: "Afirmativa" },
-            { id: 46, prompt: "The window ___ open.", translation: "La ventana está abierta.", solution: "is", context: "Ventana (singular), usamos 'is'.", type: "Afirmativa" },
-            { id: 47, prompt: "You ___ always helping everyone.", translation: "Tú siempre estás ayudando a todos.", solution: "are", context: "Uso de 'are' con el pronombre 'You'.", type: "Afirmativa" },
-            { id: 48, prompt: "It ___ snowing in Florida.", translation: "No está nevando en Florida.", solution: "isn't", context: "Negativo con contracción de clima: 'it isn't snowing'.", type: "Negativa" },
-            { id: 49, prompt: "The children ___ playing in the garden.", translation: "Los niños están jugando en el jardín.", solution: "are", context: "Niños (plural) requiere 'are'.", type: "Afirmativa" },
-            { id: 50, prompt: "I ___ ready for the challenge.", translation: "Estoy listo para el desafío.", solution: "am", context: "Adjetivo con primera persona: 'I am ready'.", type: "Afirmativa" }
-        ];
+        // CONFIGURACIONES GLOBALES DE LA BASE DE DATOS DE TU EXCEL
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwvn6PbBd6z04ki3C9tDpMUyYi2nLlhezY7AIR61rj0YNi-3Bef6srZ5X660iOV1Vg1Jg/exec";
 
-        // Sección 2: Ejercicios de Shadowing (Frases completas para escuchar y repetir)
-        const s2Exercises = [
-            { id: 1, text: "I am a happy student.", translation: "Yo soy un estudiante feliz." },
-            { id: 2, text: "She is learning English now.", translation: "Ella está aprendiendo inglés ahora." },
-            { id: 3, text: "They are playing in the park.", translation: "Ellos están jugando en el parque." },
-            { id: 4, text: "He is drinking a cup of coffee.", translation: "Él está bebiendo una taza de café." },
-            { id: 5, text: "We are waiting for the school bus.", translation: "Estamos esperando el autobús escolar." },
-            { id: 6, text: "It is raining very hard today.", translation: "Está lloviendo muy fuerte hoy." },
-            { id: 7, text: "You are doing a fantastic job.", translation: "Estás haciendo un trabajo fantástico." },
-            { id: 8, text: "I am not watching a movie.", translation: "No estoy viendo una película." },
-            { id: 9, text: "The cat is sleeping on my bed.", translation: "El gato está durmiendo en mi cama." },
-            { id: 10, text: "My parents are working right now.", translation: "Mis padres están trabajando ahora mismo." },
-            { id: 11, text: "She is not feeling very well.", translation: "Ella no se está sintiendo muy bien." },
-            { id: 12, text: "We are cooking delicious pasta.", translation: "Estamos cocinando pasta deliciosa." },
-            { id: 13, text: "The train is arriving at the station.", translation: "El tren está llegando a la estación." },
-            { id: 14, text: "They are not studying tonight.", translation: "Ellos no están estudiando esta noche." },
-            { id: 15, text: "I am wearing a blue sweater.", translation: "Estoy usando un suéter azul." },
-            { id: 16, text: "He is talking to his sister.", translation: "Él está hablando con su hermana." },
-            { id: 17, text: "The sun is shining in the sky.", translation: "El sol está brillando en el cielo." },
-            { id: 18, text: "You are not driving the car.", translation: "Tú no estás conduciendo el auto." },
-            { id: 19, text: "It is a beautiful afternoon.", translation: "Es una tarde hermosa." },
-            { id: 20, text: "The children are playing outside.", translation: "Los niños están jugando afuera." },
-            { id: 21, text: "I am eating a fresh red apple.", translation: "Estoy comiendo una manzana roja fresca." },
-            { id: 22, text: "She is writing a letter to her friend.", translation: "Ella está escribiendo una carta a su amiga." },
-            { id: 23, text: "We are listening to the music.", translation: "Estamos escuchando la música." },
-            { id: 24, text: "He is running very fast.", translation: "Él está corriendo muy rápido." },
-            { id: 25, text: "They are visiting the museum.", translation: "Ellos están visitando el museo." },
-            { id: 26, text: "The bird is singing on the tree.", translation: "El pájaro está cantando en el árbol." },
-            { id: 27, text: "I am not busy right now.", translation: "No estoy ocupado ahora mismo." },
-            { id: 28, text: "You are walking in the garden.", translation: "Estás caminando en el jardín." },
-            { id: 29, text: "The water is very cold today.", translation: "El agua está muy fría hoy." },
-            { id: 30, text: "We are having lunch at a restaurant.", translation: "Estamos almorzando en un restaurante." },
-            { id: 31, text: "She is buying a new dress.", translation: "Ella está comprando un vestido nuevo." },
-            { id: 32, text: "My dog is running after a ball.", translation: "Mi perro está corriendo tras una pelota." },
-            { id: 33, text: "They are not eating fast food.", translation: "Ellos no están comiendo comida rápida." },
-            { id: 34, text: "I am cleaning my room now.", translation: "Estoy limpiando mi habitación ahora." },
-            { id: 35, text: "He is painting a picture.", translation: "Él está pintando un cuadro." },
-            { id: 36, text: "The computer is working perfectly.", translation: "La computadora está funcionando perfectamente." },
-            { id: 37, text: "You are speaking English well.", translation: "Estás hablando inglés muy bien." },
-            { id: 38, text: "We are not watching the game.", translation: "Nosotros no estamos viendo el partido." },
-            { id: 39, text: "She is laughing at the joke.", translation: "Ella se está riendo del chiste." },
-            { id: 40, text: "It is getting dark outside.", translation: "Se está haciendo oscuro afuera." },
-            { id: 41, text: "The baby is sleeping peacefully.", translation: "El bebé está durmiendo pacíficamente." },
-            { id: 42, text: "I am taking a small break.", translation: "Me estoy tomando un pequeño descanso." },
-            { id: 43, text: "They are studying for the test.", translation: "Ellos están estudiando para el examen." },
-            { id: 44, text: "He is not wearing his glasses.", translation: "Él no está usando sus lentes." },
-            { id: 45, text: "We are building a sandcastle.", translation: "Estamos construyendo un castillo de arena." },
-            { id: 46, text: "The flowers are opening in spring.", translation: "Las flores se están abriendo en primavera." },
-            { id: 47, text: "You are learning very quickly.", translation: "Estás haciendo progresos muy rápidos." },
-            { id: 48, text: "It is not snowing this morning.", translation: "No está nevando esta mañana." },
-            { id: 49, text: "I am opening the main door.", translation: "Estoy abriendo la puerta principal." },
-            { id: 50, text: "They are celebrating a birthday.", translation: "Ellos están celebrando un cumpleaños." }
-        ];
+        // Inicializar Iconos de Lucide
+        lucide.createIcons();
 
-        // Sección 3: Reverse Questions (Dar una respuesta y el estudiante debe construir la pregunta correcta)
-        const s3Exercises = [
-            { id: 1, prompt: "Yes, I am a doctor.", translation: "Sí, soy doctor.", solution: "Are you a doctor?", context: "Pregunta simple de sí/no con To Be para 'You'." },
-            { id: 2, prompt: "No, they are not studying.", translation: "No, ellos no están estudiando.", solution: "Are they studying?", context: "Pregunta en Present Continuous invertida: Are + They + studying?" },
-            { id: 3, prompt: "She is thirty years old.", translation: "Ella tiene 30 años.", solution: "How old is she?", context: "Pregunta por edad con To Be." },
-            { id: 4, prompt: "Yes, it is raining.", translation: "Sí, está lloviendo.", solution: "Is it raining?", context: "Pregunta invertida para el clima en Present Continuous." },
-            { id: 5, prompt: "He is running in the park.", translation: "Él está corriendo en el parque.", solution: "Where is he running?", context: "Pregunta con Wh- Word: Where + is + he + running?" },
-            { id: 6, prompt: "No, we are not lost.", translation: "No, no estamos perdidos.", solution: "Are you lost?", context: "Para responder 'we', la pregunta típicamente se hace a 'you' (plural)." },
-            { id: 7, prompt: "They are playing video games.", translation: "Ellos están jugando videojuegos.", solution: "What are they playing?", context: "Pregunta sobre el objeto de la acción." },
-            { id: 8, prompt: "Yes, I am hungry.", translation: "Sí, tengo hambre.", solution: "Are you hungry?", context: "Pregunta directa de estado con 'you'." },
-            { id: 9, prompt: "She is crying because she is sad.", translation: "Ella está llorando porque está triste.", solution: "Why is she crying?", context: "Pregunta por motivo: Why + is + she + crying?" },
-            { id: 10, prompt: "The cat is on the sofa.", translation: "El gato está sobre el sofá.", solution: "Where is the cat?", context: "Pregunta por localización del gato." },
-            { id: 11, prompt: "No, he is not a teacher.", translation: "No, él no es profesor.", solution: "Is he a teacher?", context: "Inversión de To Be para 'He'." },
-            { id: 12, prompt: "We are learning English.", translation: "Estamos aprendiendo inglés.", solution: "What are you learning?", context: "Pregunta de Present Continuous con Wh- Word." },
-            { id: 13, prompt: "My keys are in my bag.", translation: "Mis llaves están en mi bolso.", solution: "Where are your keys?", context: "Localización de objetos en plural." },
-            { id: 14, prompt: "Yes, he is listening to you.", translation: "Sí, te está escuchando.", solution: "Is he listening to me?", context: "Pregunta de confirmación." },
-            { id: 15, prompt: "They are from Spain.", translation: "Ellos son de España.", solution: "Where are they from?", context: "Pregunta clásica de origen A1." },
-            { id: 16, prompt: "Yes, I am eating lunch.", translation: "Sí, estoy almorzando.", solution: "Are you eating lunch?", context: "Conversión de 'I am' a 'Are you' para preguntar." },
-            { id: 17, prompt: "She is cooking pasta.", translation: "Ella está cocinando pasta.", solution: "What is she cooking?", context: "Pregunta por el objeto que cocina." },
-            { id: 18, prompt: "No, the dog is not aggressive.", translation: "No, el perro no es agresivo.", solution: "Is the dog aggressive?", context: "Sujeto singular 'dog' requiere 'Is' adelante." },
-            { id: 19, prompt: "They are going to the cinema.", translation: "Ellos van al cine.", solution: "Where are they going?", context: "Pregunta de dirección o destino." },
-            { id: 20, prompt: "Yes, we are happy.", translation: "Sí, somos felices.", solution: "Are you happy?", context: "Pregunta plural con To Be." },
-            { id: 21, prompt: "He is doing his homework.", translation: "Él está haciendo su tarea.", solution: "What is he doing?", context: "Pregunta clásica sobre acción en progreso." },
-            { id: 22, prompt: "The book is under the table.", translation: "El libro está debajo de la mesa.", solution: "Where is the book?", context: "Localización de un objeto singular." },
-            { id: 23, prompt: "No, she is not driving.", translation: "No, ella no está conduciendo.", solution: "Is she driving?", context: "Estructura de pregunta de sí/no." },
-            { id: 24, prompt: "I am fine, thank you.", translation: "Estoy bien, gracias.", solution: "How are you?", context: "Saludo estándar de nivel A1." },
-            { id: 25, prompt: "They are shouting because they are angry.", translation: "Están gritando porque están enojados.", solution: "Why are they shouting?", context: "Pregunta de causa en plural." },
-            { id: 26, prompt: "Yes, I am wearing a coat.", translation: "Sí, estoy usando un abrigo.", solution: "Are you wearing a coat?", context: "Inversión para preguntar sobre vestimenta." },
-            { id: 27, prompt: "She is a beautiful baby.", translation: "Es una bebé hermosa.", solution: "Is she a beautiful baby?", context: "To Be interrogativo con adjetivo y sustantivo." },
-            { id: 28, prompt: "We are studying for the exam.", translation: "Estamos estudiando para el examen.", solution: "Why are you studying?", context: "Pregunta de propósito." },
-            { id: 29, prompt: "No, the shop is not open.", translation: "No, la tienda no está abierta.", solution: "Is the shop open?", context: "Pregunta sobre el estado de un establecimiento." },
-            { id: 30, prompt: "He is visiting his grandmother.", translation: "Él está visitando a su abuela.", solution: "Who is he visiting?", context: "Pregunta por persona con 'Who'." },
-            { id: 31, prompt: "The train is arriving at 9 PM.", translation: "El tren llegará a las 9 PM.", solution: "What time is the train arriving?", context: "Pregunta sobre tiempo de llegada." },
-            { id: 32, prompt: "Yes, they are best friends.", translation: "Sí, son mejores amigos.", solution: "Are they best friends?", context: "Pregunta de relación personal." },
-            { id: 33, prompt: "No, I am not tired.", translation: "No, no estoy cansado.", solution: "Are you tired?", context: "Pregunta básica de estado físico." },
-            { id: 34, prompt: "She is in her office.", translation: "Ella está en su oficina.", solution: "Where is she?", context: "Pregunta simple de ubicación." },
-            { id: 35, prompt: "They are reading a comic book.", translation: "Ellos están leyendo una historieta.", solution: "What are they reading?", context: "Pregunta de lectura actual." },
-            { id: 36, prompt: "No, it is not snowing.", translation: "No, no está nevando.", solution: "Is it snowing?", context: "Pregunta de clima." },
-            { id: 37, prompt: "He is buying a new laptop.", translation: "Él está comprando una nueva laptop.", solution: "What is he buying?", context: "Pregunta sobre compra." },
-            { id: 38, prompt: "My phone number is 12345.", translation: "Mi número de teléfono es 12345.", solution: "What is your phone number?", context: "Información personal básica." },
-            { id: 39, prompt: "Yes, we are leaving now.", translation: "Sí, nos vamos ahora.", solution: "Are you leaving now?", context: "Salida inminente." },
-            { id: 40, prompt: "They are at the stadium.", translation: "Ellos están en el estadio.", solution: "Where are they?", context: "Ubicación en plural." },
-            { id: 41, prompt: "She is crying for her toy.", translation: "Ella está llorando por su juguete.", solution: "Why is she crying?", context: "Pregunta por llanto." },
-            { id: 42, prompt: "Yes, I am speaking to you.", translation: "Sí, te estoy hablando a ti.", solution: "Are you speaking to me?", context: "Inversión de pronombres." },
-            { id: 43, prompt: "He is wearing a blue shirt.", translation: "Él viste una camisa azul.", solution: "What color shirt is he wearing?", context: "Pregunta por color de vestimenta." },
-            { id: 44, prompt: "The museum is next to the bank.", translation: "El museo está al lado del banco.", solution: "Where is the museum?", context: "Localización con preposiciones." },
-            { id: 45, prompt: "No, they are not crying.", translation: "No, ellos no están llorando.", solution: "Are they crying?", context: "Confirmación de estado emocional en plural." },
-            { id: 46, prompt: "I am feeling fantastic.", translation: "Me estoy sintiendo fantástico.", solution: "How are you feeling?", context: "Pregunta por sentimiento físico." },
-            { id: 47, prompt: "Yes, the soup is hot.", translation: "Sí, la sopa está caliente.", solution: "Is the soup hot?", context: "Estado físico de comida." },
-            { id: 48, prompt: "They are running because they are late.", translation: "Están corriendo porque van tarde.", solution: "Why are they running?", context: "Pregunta de motivo de prisa." },
-            { id: 49, prompt: "She is looking at the birds.", translation: "Ella está mirando las aves.", solution: "What is she looking at?", context: "Pregunta de atención visual." },
-            { id: 50, prompt: "Yes, I am ready.", translation: "Sí, estoy listo.", solution: "Are you ready?", context: "Pregunta clásica de preparación." }
-        ];
-    </script>
-
-    <!-- MOTOR LÓGICO DE LA APP -->
-    <script>
-        const memoryStorage = {};
-        const safeStorage = {
-            getItem: function(key) {
-                try {
-                    return localStorage.getItem(key);
-                } catch (e) {
-                    console.warn("Storage bloqueado, cargando memoria temporal.", e);
-                    return memoryStorage[key] || null;
-                }
+        // ESTADO GLOBAL DE LA APLICACIÓN
+        let appState = {
+            student: {
+                name: "",
+                email: ""
             },
-            setItem: function(key, value) {
-                try {
-                    localStorage.setItem(key, value);
-                } catch (e) {
-                    console.warn("Storage bloqueado, escribiendo en memoria temporal.", e);
-                    memoryStorage[key] = String(value);
-                }
+            api_key: "",
+            progress: {
+                tobe: { answered: 0, total: 2 },
+                continuous: { answered: 0, total: 2 },
+                chat: { count: 0, max: 3 } // Con 3 mensajes de IA consiguen el 100% de esta sección
             },
-            removeItem: function(key) {
-                try {
-                    localStorage.removeItem(key);
-                } catch (e) {
-                    delete memoryStorage[key];
-                }
+            answers: {
+                q1: false,
+                q2: false,
+                q3: false,
+                q4: false
             }
         };
 
-        // Variables de estado
-        let activeTab = 'tab1';
-        let currentS1Index = 0;
-        let currentS2Index = 0;
-        let currentS3Index = 0;
-
-        // Progreso guardado localmente
-        let progress = {
-            tab1: Array(50).fill(false),
-            tab2: Array(50).fill(false),
-            tab3: Array(50).fill(false)
-        };
-
-        let audioCache = {};
-
-        // Métodos de autenticación y claves (Client ID idéntico a tu captura)
-        const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
-        let googleAccessToken = '';
-        let googleTokenExpiry = 0; // Timestamp en ms
-        let geminiApiKey = '';
-        
-        // URL predeterminada proporcionada por el usuario para Google Sheets
-        const DEFAULT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwvn6PbBd6z04ki3C9tDpMUyYi2nLlhezY7AIR61rj0YNi-3Bef6srZ5X660iOV1Vg1Jg/exec';
-        let googleSheetsUrl = DEFAULT_SHEETS_URL;
-        let preferredVoice = 'Kore';
-
-        // Almacenar perfil de Google del alumno
-        let studentProfile = null;
-        let onConfirmCallback = null;
-        let tokenClient;
-        let recognition;
-        let isRecording = false;
-
-        // Inicialización
-        window.onload = function() {
-            lucide.createIcons();
-            loadProgressFromStorage();
-            loadGeminiConfig();
-            updateProgressUI();
-            buildExerciseSelectors();
-            loadExerciseData();
-            initSpeechRecognition();
-            initGoogleOAuthClient();
-        };
-
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-        }
-
-        function loadProgressFromStorage() {
-            const saved = safeStorage.getItem('english_a1_progress');
-            if (saved) {
-                try {
-                    progress = JSON.parse(saved);
-                } catch(e) {
-                    console.error("Error cargando progreso:", e);
-                }
+        // CARGA INICIAL DE DATOS DESDE LOCALSTORAGE
+        window.addEventListener('DOMContentLoaded', () => {
+            // Cargar perfil
+            const cachedUser = localStorage.getItem('english_center_student');
+            if (cachedUser) {
+                appState.student = JSON.parse(cachedUser);
+                mostrarPerfilIdentificado();
             }
-        }
 
-        // Guardar progreso utilizando el storage seguro y sincronizar automáticamente con Google Sheets
-        function saveProgressToStorage() {
-            safeStorage.setItem('english_a1_progress', JSON.stringify(progress));
-            updateProgressUI();
-            
-            // Dispara el guardado automático e instantáneo en Google Sheets si está configurado
-            syncToGoogleSheets();
-        }
-
-        // Función centralizada para enviar el progreso consolidado a Google Sheets en segundo plano
-        async function syncToGoogleSheets() {
-            const currentUrl = googleSheetsUrl || DEFAULT_SHEETS_URL;
-            
-            if (!currentUrl) {
-                updateSyncStatusUI('local', 'Auto Local');
-                return;
+            // Cargar API Key
+            const cachedKey = localStorage.getItem('english_center_gemini_key');
+            if (cachedKey) {
+                appState.api_key = cachedKey;
+                document.getElementById('api-key-input').value = cachedKey;
             }
-            if (!studentProfile) {
-                updateSyncStatusUI('local', 'Inicia Sesión');
+
+            // Cargar respuestas guardadas localmente
+            const cachedAnswers = localStorage.getItem('english_center_answers');
+            if (cachedAnswers) {
+                appState.answers = JSON.parse(cachedAnswers);
+                restaurarRespuestasEInterfaz();
+            }
+
+            const cachedChatCount = localStorage.getItem('english_center_chat_count');
+            if (cachedChatCount) {
+                appState.progress.chat.count = parseInt(cachedChatCount, 10) || 0;
+            }
+
+            actualizarGraficosProgreso();
+            evaluarIndicadorSincronizacion('reposo');
+        });
+
+        // --- MANEJO DE IDENTIDAD ---
+        function guardarIdentidadLocal() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const emailInput = document.getElementById('student-email').value.trim();
+
+            if (!nameInput || !emailInput) {
+                showToast("Por favor introduce tu nombre y tu email para guardar", "alert-circle", "text-red-500");
                 return;
             }
 
-            updateSyncStatusUI('syncing', 'Sincronizando...');
+            appState.student.name = nameInput;
+            appState.student.email = emailInput;
 
-            const s1Count = progress.tab1.filter(Boolean).length;
-            const s2Count = progress.tab2.filter(Boolean).length;
-            const s3Count = progress.tab3.filter(Boolean).length;
-            const total = s1Count + s2Count + s3Count;
-            const percentage = Math.round((total / 150) * 100);
+            localStorage.setItem('english_center_student', JSON.stringify(appState.student));
+            mostrarPerfilIdentificado();
+            showToast("Perfil guardado. ¡Sincronización activada!", "user-check", "text-emerald-500");
+            
+            // Forzar primer guardado de estado actual en la nube al conectarse
+            sincronizarAExcel("Identificación de Perfil Inicial");
+        }
 
-            // Generar el payload limpio para la hoja de cálculo
-            const payload = {
-                email: studentProfile.email,
-                name: studentProfile.name,
-                progress_s1: `${s1Count}/50`,
-                progress_s2: `${s2Count}/50`,
-                progress_s3: `${s3Count}/50`,
-                total_progress: `${percentage}%`
-            };
+        function mostrarPerfilIdentificado() {
+            document.getElementById('login-form-box').classList.add('hidden');
+            document.getElementById('profile-box').classList.remove('hidden');
 
-            try {
-                // Envío de datos HTTP POST en segundo plano (Zero clicks del estudiante)
-                await fetch(currentUrl, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
+            document.getElementById('profile-name').innerText = appState.student.name;
+            document.getElementById('profile-email').innerText = appState.student.email;
+            document.getElementById('profile-avatar').innerText = appState.student.name.charAt(0).toUpperCase();
+        }
+
+        function logoutEstudiante() {
+            if (confirm("¿Estás seguro de que deseas desvincular tu perfil de este dispositivo?")) {
+                localStorage.removeItem('english_center_student');
+                appState.student = { name: "", email: "" };
                 
-                updateSyncStatusUI('synced', 'Sincronizado');
-            } catch (error) {
-                console.error("Fallo de guardado automático en Google Sheets:", error);
-                updateSyncStatusUI('error', 'Error de Sinc');
+                document.getElementById('login-form-box').classList.remove('hidden');
+                document.getElementById('profile-box').classList.add('hidden');
+                document.getElementById('student-name').value = "";
+                document.getElementById('student-email').value = "";
+
+                actualizarGraficosProgreso();
+                evaluarIndicadorSincronizacion('reposo');
+                showToast("Perfil desconectado.", "log-out", "text-amber-500");
             }
         }
 
-        // Actualiza el indicador visual en el encabezado
-        function updateSyncStatusUI(status, text) {
-            const badge = document.getElementById('sync-status-badge');
-            const icon = document.getElementById('sync-icon');
-            const statusText = document.getElementById('sync-status-text');
-
-            if (!badge || !icon || !statusText) return;
-
-            statusText.innerText = text;
-
-            if (status === 'syncing') {
-                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-lg text-xs font-semibold border border-yellow-500/30 animate-pulse";
-                icon.setAttribute('data-lucide', 'refresh-cw');
-                icon.className = "w-3.5 h-3.5 animate-spin text-yellow-500";
-            } else if (status === 'synced') {
-                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-semibold border border-emerald-500/30";
-                icon.setAttribute('data-lucide', 'cloud-check');
-                icon.className = "w-3.5 h-3.5 text-emerald-500";
-            } else if (status === 'error') {
-                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded-lg text-xs font-semibold border border-rose-500/30";
-                icon.setAttribute('data-lucide', 'cloud-off');
-                icon.className = "w-3.5 h-3.5 text-rose-500";
-            } else {
-                badge.className = "flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700";
-                icon.setAttribute('data-lucide', 'database');
-                icon.className = "w-3.5 h-3.5 text-slate-400";
-            }
-            lucide.createIcons();
-        }
-
-        function requestResetAllProgress() {
-            showConfirmModal(
-                "¿Reiniciar Progreso?", 
-                "Se borrarán de forma permanente todas tus respuestas y aciertos guardados. Tendrás que empezar de nuevo.",
-                function() {
-                    progress = {
-                        tab1: Array(50).fill(false),
-                        tab2: Array(50).fill(false),
-                        tab3: Array(50).fill(false)
-                    };
-                    clearAudioCache();
-                    saveProgressToStorage();
-                    loadExerciseData();
-                    showToast("Todo el progreso ha sido reiniciado", "trash-2", "text-red-500");
-                }
-            );
-        }
-
-        function showConfirmModal(title, description, onConfirm) {
-            document.getElementById('confirm-title').innerText = title;
-            document.getElementById('confirm-desc').innerText = description;
-            onConfirmCallback = onConfirm;
-            
-            const modal = document.getElementById('confirm-modal');
-            modal.classList.remove('hidden');
-            
-            const confirmBtn = document.getElementById('confirm-btn-yes');
-            confirmBtn.onclick = function() {
-                if (onConfirmCallback) onConfirmCallback();
-                closeConfirmModal();
-            };
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirm-modal').classList.add('hidden');
-            onConfirmCallback = null;
-        }
-
-        function clearAudioCache() {
-            audioCache = {};
-        }
-
-        function updateProgressUI() {
-            const s1Count = progress.tab1.filter(Boolean).length;
-            const s2Count = progress.tab2.filter(Boolean).length;
-            const s3Count = progress.tab3.filter(Boolean).length;
-
-            document.getElementById('prog-s1').innerText = `${s1Count} / 50`;
-            document.getElementById('prog-s2').innerText = `${s2Count} / 50`;
-            document.getElementById('prog-s3').innerText = `${s3Count} / 50`;
-
-            const p1 = (s1Count / 50) * 100;
-            const p2 = (s2Count / 50) * 100;
-            const p3 = (s3Count / 50) * 100;
-
-            document.getElementById('bar-s1').style.width = `${p1}%`;
-            document.getElementById('bar-s2').style.width = `${p2}%`;
-            document.getElementById('bar-s3').style.width = `${p3}%`;
-
-            const totalCompleted = s1Count + s2Count + s3Count;
-            const totalPercentage = Math.round((totalCompleted / 150) * 100);
-            document.getElementById('global-percentage').innerText = `Progreso Total: ${totalPercentage}%`;
-        }
-
-        function loadGeminiConfig() {
-            const savedVoice = safeStorage.getItem('gemini_voice');
-            const savedAccessToken = safeStorage.getItem('google_access_token');
-            const savedExpiry = safeStorage.getItem('google_token_expiry');
-            const savedProfile = safeStorage.getItem('google_student_profile');
-            const savedApiKey = safeStorage.getItem('gemini_api_key');
-            const savedSheetsUrl = safeStorage.getItem('google_sheets_url');
-            
-            if (savedAccessToken && savedExpiry) {
-                googleAccessToken = savedAccessToken;
-                googleTokenExpiry = parseInt(savedExpiry);
-            }
-
-            if (savedProfile) {
-                try {
-                    studentProfile = JSON.parse(savedProfile);
-                } catch (e) {
-                    console.error("Error cargando perfil de estudiante:", e);
-                }
-            }
-
-            if (savedVoice) {
-                preferredVoice = savedVoice;
-                document.getElementById('gemini-voice-select').value = savedVoice;
-            }
-
-            if (savedApiKey) {
-                geminiApiKey = savedApiKey;
-                document.getElementById('gemini-api-key-input').value = savedApiKey;
-            }
-
-            // Inicializar con la URL predeterminada si el alumno no ha configurado una distinta en local
-            if (savedSheetsUrl) {
-                googleSheetsUrl = savedSheetsUrl;
-                document.getElementById('sheets-url-input').value = savedSheetsUrl;
-            } else {
-                googleSheetsUrl = DEFAULT_SHEETS_URL;
-                document.getElementById('sheets-url-input').value = DEFAULT_SHEETS_URL;
-            }
-
-            updateAuthBadgeUI();
-            
-            // Trata de reportar estado en Sheets al arrancar
-            if (googleSheetsUrl && studentProfile) {
-                syncToGoogleSheets();
-            }
-        }
-
-        function updateAuthBadgeUI() {
-            const badge = document.getElementById('gemini-badge');
-            const oauthBtnText = document.getElementById('oauth-btn-text');
-            const profileCard = document.getElementById('oauth-profile-card');
-
-            const hasOauth = googleAccessToken && Date.now() < googleTokenExpiry;
-            const hasApiKey = !!geminiApiKey;
-
-            if (hasOauth && hasApiKey) {
-                badge.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-            } else if (hasOauth || hasApiKey) {
-                badge.className = "w-2.5 h-2.5 rounded-full bg-yellow-500";
-            } else {
-                badge.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-            }
-
-            if (hasOauth) {
-                oauthBtnText.innerText = "¡Sincronizado con Google!";
-                if (studentProfile) {
-                    profileCard.classList.remove('hidden');
-                    document.getElementById('oauth-profile-img').src = studentProfile.picture || 'https://placehold.co/40x40/3b82f6/ffffff?text=' + studentProfile.name[0];
-                    document.getElementById('oauth-profile-name').innerText = studentProfile.name || 'Estudiante';
-                    document.getElementById('oauth-profile-email').innerText = studentProfile.email || 'Sincronizado';
-                }
-            } else {
-                oauthBtnText.innerText = "Vincular Cuenta Google";
-                profileCard.classList.add('hidden');
-            }
-        }
-
-        function toggleGeminiModal() {
-            const modal = document.getElementById('gemini-modal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                lucide.createIcons();
-                updateAuthBadgeUI();
-            }
-        }
-
-        // Inicializar el cliente de Google Identity Services (Alcance simplificado sin error 400)
-        function initGoogleOAuthClient() {
-            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-                setTimeout(initGoogleOAuthClient, 1000);
+        // --- MANEJO DE GEMINI API KEY ---
+        function guardarApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            if (!key) {
+                showToast("La clave no puede estar vacía", "key", "text-red-500");
                 return;
             }
-
-            try {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: googleClientId,
-                    scope: 'email profile openid',
-                    callback: (tokenResponse) => {
-                        if (tokenResponse.error !== undefined) {
-                            console.error("Error en Google Auth:", tokenResponse.error);
-                            showToast("Error de autenticación", "alert-triangle", "text-red-500");
-                            return;
-                        }
-
-                        googleAccessToken = tokenResponse.access_token;
-                        googleTokenExpiry = Date.now() + (parseInt(tokenResponse.expires_in) * 1000);
-                        
-                        safeStorage.setItem('google_access_token', googleAccessToken);
-                        safeStorage.setItem('google_token_expiry', googleTokenExpiry);
-                        
-                        fetchStudentProfileInfo(googleAccessToken);
-                    },
-                });
-            } catch (e) {
-                console.error("Error inicializando tokenClient de Google:", e);
-            }
+            appState.api_key = key;
+            localStorage.setItem('english_center_gemini_key', key);
+            showToast("Clave API de Gemini guardada correctamente", "shield-check", "text-purple-500");
         }
 
-        async function fetchStudentProfileInfo(token) {
-            try {
-                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    studentProfile = {
-                        name: data.name,
-                        email: data.email,
-                        picture: data.picture
-                    };
-                    safeStorage.setItem('google_student_profile', JSON.stringify(studentProfile));
-                }
-            } catch (e) {
-                console.warn("No se pudo obtener el perfil público de Google:", e);
-            } finally {
-                showToast("¡Cuenta Google vinculada correctamente!", "check", "text-emerald-500");
-                updateAuthBadgeUI();
-                
-                // Trata de sincronizar instantáneamente el progreso acumulado tras loguearse
-                syncToGoogleSheets();
-                triggerPrefetch();
-            }
-        }
-
-        function loginWithGoogleOAuth() {
-            if (!tokenClient) {
-                initGoogleOAuthClient();
-            }
-
-            if (tokenClient) {
-                tokenClient.requestAccessToken({ prompt: 'consent' });
-            } else {
-                showToast("Fallo al inicializar cliente de Google. Reintente.", "alert-triangle", "text-red-500");
-            }
-        }
-
-        // Guarda configuración general y actualiza base de datos local
-        function saveGeminiSettings() {
-            const voice = document.getElementById('gemini-voice-select').value;
-            const apiKey = document.getElementById('gemini-api-key-input').value.trim();
-            const sheetsUrl = document.getElementById('sheets-url-input').value.trim();
-
-            clearAudioCache();
-            preferredVoice = voice;
-            safeStorage.setItem('gemini_voice', voice);
-
-            geminiApiKey = apiKey;
-            safeStorage.setItem('gemini_api_key', apiKey);
-
-            googleSheetsUrl = sheetsUrl;
-            safeStorage.setItem('google_sheets_url', sheetsUrl);
-
-            updateAuthBadgeUI();
-            toggleGeminiModal();
-            showToast("Configuración guardada con éxito", "check", "text-emerald-500");
-            
-            // Reintenta sincronización de progreso inmediata con el nuevo endpoint
-            syncToGoogleSheets();
-            triggerPrefetch();
-        }
-
-        function clearGeminiSettings() {
-            googleAccessToken = '';
-            googleTokenExpiry = 0;
-            studentProfile = null;
-            geminiApiKey = '';
-            googleSheetsUrl = '';
-            
-            safeStorage.removeItem('google_access_token');
-            safeStorage.removeItem('google_token_expiry');
-            safeStorage.removeItem('google_student_profile');
-            safeStorage.removeItem('gemini_api_key');
-            safeStorage.removeItem('google_sheets_url');
-            
-            document.getElementById('gemini-api-key-input').value = '';
-            document.getElementById('sheets-url-input').value = '';
-            
-            clearAudioCache();
-            updateAuthBadgeUI();
-            updateSyncStatusUI('local', 'Auto Local');
-            showToast("Se han limpiado todas las configuraciones.", "info", "text-blue-500");
-            toggleGeminiModal();
-        }
-
-        function toggleApiKeyVisibility() {
-            const input = document.getElementById('gemini-api-key-input');
-            const icon = document.getElementById('key-visibility-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
+        function togglePasswordVisibility(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('toggle-key-eye');
+            if (el.type === "password") {
+                el.type = "text";
                 icon.setAttribute('data-lucide', 'eye-off');
             } else {
-                input.type = 'password';
+                el.type = "password";
                 icon.setAttribute('data-lucide', 'eye');
             }
             lucide.createIcons();
         }
 
-        function switchTab(tabId) {
-            activeTab = tabId;
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`${tabId}-content`).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
-            });
-
-            const activeBtn = document.getElementById(`btn-${tabId}`);
-            if (tabId === 'tab1') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-blue-500 text-white";
-            if (tabId === 'tab2') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-emerald-500 text-white";
-            if (tabId === 'tab3') activeBtn.className = "nav-btn px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-sm bg-purple-500 text-white";
-
-            buildExerciseSelectors();
-            loadExerciseData();
-        }
-
-        function buildExerciseSelectors() {
-            const selector = document.getElementById('exercise-selector');
-            if (!selector) return;
-            selector.innerHTML = '';
+        // --- LOGICA DE EJERCICIOS GRAMATICALES ---
+        function comprobarPregunta(id, correctAnswer) {
+            const inputVal = document.getElementById(`${id}-input`).value.trim().toLowerCase();
+            const feedbackEl = document.getElementById(`${id}-feedback`);
             
-            let currentIdx = getActiveIndex();
-            let arr = activeTab === 'tab1' ? progress.tab1 : activeTab === 'tab2' ? progress.tab2 : progress.tab3;
+            // Limpieza sencilla para aceptar contracciones habituales
+            const cleanStr = (str) => str.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+            
+            const isCorrect = cleanStr(inputVal) === cleanStr(correctAnswer);
+            const oldStatus = appState.answers[id];
 
-            for (let i = 0; i < 50; i++) {
-                const opt = document.createElement('option');
-                opt.value = i;
-                const completedSymbol = arr[i] ? '✓' : '✗';
-                opt.innerText = `Reto ${i + 1} [${completedSymbol}]`;
-                if (i === currentIdx) opt.selected = true;
-                selector.appendChild(opt);
-            }
-
-            document.getElementById('current-badge').innerText = `${currentIdx + 1} / 50`;
-        }
-
-        function getActiveIndex() {
-            if (activeTab === 'tab1') return currentS1Index;
-            if (activeTab === 'tab2') return currentS2Index;
-            return currentS3Index;
-        }
-
-        function setActiveIndex(val) {
-            if (activeTab === 'tab1') currentS1Index = val;
-            else if (activeTab === 'tab2') currentS2Index = val;
-            else currentS3Index = val;
-            buildExerciseSelectors();
-        }
-
-        function jumpToExercise(val) {
-            setActiveIndex(parseInt(val));
-            loadExerciseData();
-        }
-
-        function nextExercise() {
-            let idx = getActiveIndex();
-            if (idx < 49) {
-                setActiveIndex(idx + 1);
-                loadExerciseData();
+            if (isCorrect) {
+                feedbackEl.innerHTML = `<span class="text-emerald-500 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Correcto!</span>`;
+                appState.answers[id] = true;
             } else {
-                showToast("¡Has llegado al final de esta sección!", "award", "text-yellow-500");
-            }
-        }
-
-        function prevExercise() {
-            let idx = getActiveIndex();
-            if (idx > 0) {
-                setActiveIndex(idx - 1);
-                loadExerciseData();
-            }
-        }
-
-        function loadExerciseData() {
-            const idx = getActiveIndex();
-            hideAllFeedbacks();
-            resetActionButtonsToVerify();
-
-            if (activeTab === 'tab1') {
-                const data = s1Exercises[idx];
-                document.getElementById('s1-prompt').innerHTML = data.prompt.replace("___", `<span class="border-b-2 border-dashed border-blue-500 text-blue-500 px-4 py-1 font-extrabold animate-fade-in" id="s1-blank">______</span>`);
-                document.getElementById('s1-translation').innerText = data.translation;
-                document.getElementById('s1-input').value = '';
-                document.getElementById('s1-input').focus();
-
-                const badge = document.getElementById('s1-type-badge');
-                if (data.type === 'Negativa') {
-                    badge.className = "px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded-full text-xs font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-900/30";
-                    badge.innerHTML = `<i data-lucide="minus-circle" class="w-3.5 h-3.5"></i> Oración Negativa`;
+                if (inputVal.length > 0) {
+                    feedbackEl.innerHTML = `<span class="text-amber-500 flex items-center gap-1"><i data-lucide="help-circle" class="w-4 h-4"></i> Intentándolo...</span>`;
                 } else {
-                    badge.className = "px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-full text-xs font-bold flex items-center gap-1 border border-emerald-200 dark:border-emerald-900/30";
-                    badge.innerHTML = `<i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Oración Afirmativa`;
+                    feedbackEl.innerHTML = "";
                 }
-            } 
-            else if (activeTab === 'tab2') {
-                const data = s2Exercises[idx];
-                document.getElementById('s2-prompt').innerText = data.text;
-                document.getElementById('s2-translation').innerText = data.translation;
-                document.getElementById('shadowing-analysis-box').classList.add('hidden');
-                document.getElementById('pronunciation-score').innerText = '0%';
-                document.getElementById('score-bar').style.width = '0%';
-            } 
-            else if (activeTab === 'tab3') {
-                const data = s3Exercises[idx];
-                document.getElementById('s3-prompt').innerText = data.prompt;
-                document.getElementById('s3-translation').innerText = `Traducción de la respuesta: "${data.translation}"`;
-                document.getElementById('s3-input').value = '';
-                document.getElementById('s3-input').focus();
+                appState.answers[id] = false;
+            }
+            lucide.createIcons();
 
-                const solutionLower = data.solution.toLowerCase().trim();
-                const whQuestions = ["what time", "how old", "what color", "where", "what", "why", "who", "how"];
-                let matchedWh = null;
-                for (const wh of whQuestions) {
-                    if (solutionLower.startsWith(wh)) {
-                        matchedWh = wh.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                        break;
+            // Si cambió el estado de la respuesta, actualizamos los reportes y sincronizamos en segundo plano
+            if (oldStatus !== appState.answers[id]) {
+                localStorage.setItem('english_center_answers', JSON.stringify(appState.answers));
+                calcularTodoElProgreso();
+            }
+        }
+
+        function restaurarRespuestasEInterfaz() {
+            const correctAnswers = {
+                q1: "is",
+                q2: "are",
+                q3: "is writing",
+                q4: "are studying"
+            };
+
+            for (let id in appState.answers) {
+                if (appState.answers[id]) {
+                    const input = document.getElementById(`${id}-input`);
+                    if (input) {
+                        input.value = correctAnswers[id];
+                        const feedbackEl = document.getElementById(`${id}-feedback`);
+                        feedbackEl.innerHTML = `<span class="text-emerald-500 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Correcto!</span>`;
                     }
-                }
-
-                const labelEl = document.getElementById('s3-input-label');
-                if (matchedWh) {
-                    labelEl.innerHTML = `Tu pregunta formulada: <span class="text-purple-600 dark:text-purple-400 font-bold ml-1 animate-pulse-once">(Pista: la pregunta empieza con "${matchedWh}")</span>`;
-                } else {
-                    labelEl.innerHTML = `Tu pregunta formulada:`;
                 }
             }
             lucide.createIcons();
-            triggerPrefetch();
         }
 
-        function resetActionButtonsToVerify() {
-            const s1Btn = document.getElementById('s1-action-btn');
-            if (s1Btn) {
-                s1Btn.onclick = checkSection1Answer;
-                s1Btn.className = "px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
-                s1Btn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i><span>Verificar Respuesta</span>`;
-            }
+        function calcularTodoElProgreso() {
+            // Calcular To Be
+            let tobeCorrects = 0;
+            if (appState.answers.q1) tobeCorrects++;
+            if (appState.answers.q2) tobeCorrects++;
+            appState.progress.tobe.answered = tobeCorrects;
 
-            const s2Btn = document.getElementById('s2-action-btn');
-            if (s2Btn) {
-                s2Btn.onclick = completeShadowing;
-                s2Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
-                s2Btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i><span>Marcar como Completado</span>`;
-            }
+            // Calcular Present Continuous
+            let contCorrects = 0;
+            if (appState.answers.q3) contCorrects++;
+            if (appState.answers.q4) contCorrects++;
+            appState.progress.continuous.answered = contCorrects;
 
-            const s3Btn = document.getElementById('s3-action-btn');
-            if (s3Btn) {
-                s3Btn.onclick = checkSection3Answer;
-                s3Btn.className = "px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
-                s3Btn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i><span>Verificar Pregunta</span>`;
-            }
+            actualizarGraficosProgreso();
+
+            // ENVÍO DE DATOS SILENCIOSO AL GOOGLE SHEET EN CADA CAMBIO DE PROGRESO
+            sincronizarAExcel("Progreso de Ejercicios");
         }
 
-        function hideAllFeedbacks() {
-            document.getElementById('s1-feedback').className = "hidden rounded-2xl p-4 border transition-all";
-            document.getElementById('s1-feedback').innerHTML = "";
-            document.getElementById('s2-feedback').className = "hidden rounded-2xl p-4 border transition-all";
-            document.getElementById('s2-feedback').innerHTML = "";
-            document.getElementById('s3-feedback').className = "hidden rounded-2xl p-4 border transition-all";
-            document.getElementById('s3-feedback').innerHTML = "";
+        function actualizarGraficosProgreso() {
+            // To Be percent
+            const pToBe = Math.round((appState.progress.tobe.answered / appState.progress.tobe.total) * 100);
+            document.getElementById('p-tobe-txt').innerText = `${pToBe}%`;
+            document.getElementById('p-tobe-bar').style.width = `${pToBe}%`;
+
+            // Continuous percent
+            const pCont = Math.round((appState.progress.continuous.answered / appState.progress.continuous.total) * 100);
+            document.getElementById('p-continuous-txt').innerText = `${pCont}%`;
+            document.getElementById('p-continuous-bar').style.width = `${pCont}%`;
+
+            // Chat percent
+            const pChat = Math.round((Math.min(appState.progress.chat.count, appState.progress.chat.max) / appState.progress.chat.max) * 100);
+            document.getElementById('p-chat-txt').innerText = `${pChat}%`;
+            document.getElementById('p-chat-bar').style.width = `${pChat}%`;
+
+            // Total percent
+            const pTotal = Math.round((pToBe + pCont + pChat) / 3);
+            document.getElementById('p-total-badge').innerText = `${pTotal}%`;
         }
 
-        async function triggerPrefetch() {
-            if (!geminiApiKey) return;
-
-            let sentencesToPrefetch = [];
-
-            if (activeTab === 'tab1') {
-                for (let i = 0; i < 3; i++) {
-                    let index = currentS1Index + i;
-                    if (index < s1Exercises.length) {
-                        const data = s1Exercises[index];
-                        sentencesToPrefetch.push(data.prompt.replace("___", data.solution));
-                    }
-                }
-            } else if (activeTab === 'tab2') {
-                for (let i = 0; i < 3; i++) {
-                    let index = currentS2Index + i;
-                    if (index < s2Exercises.length) {
-                        sentencesToPrefetch.push(s2Exercises[index].text);
-                    }
-                }
+        // --- SINCRONIZADOR EN SEGUNDO PLANO A TU GOOGLE SHEET ---
+        async function sincronizarAExcel(motivo) {
+            // Si el alumno no se ha identificado, no podemos guardar con un nombre
+            if (!appState.student.email || !appState.student.name) {
+                evaluarIndicadorSincronizacion('identificacion_pendiente');
+                return;
             }
 
-            for (const text of sentencesToPrefetch) {
-                if (!audioCache[text]) {
-                    prefetchAudio(text);
-                }
-            }
-        }
+            evaluarIndicadorSincronizacion('sincronizando');
 
-        async function prefetchAudio(text) {
-            try {
-                const base64 = await getGeminiTTS(text, preferredVoice);
-                if (base64) {
-                    audioCache[text] = base64;
-                }
-            } catch (err) {
-                console.warn("Fallo silencioso al precargar audio de Gemini TTS:", text);
-            }
-        }
+            const pToBe = Math.round((appState.progress.tobe.answered / appState.progress.tobe.total) * 100);
+            const pCont = Math.round((appState.progress.continuous.answered / appState.progress.continuous.total) * 100);
+            const pChat = Math.round((Math.min(appState.progress.chat.count, appState.progress.chat.max) / appState.progress.chat.max) * 100);
+            const pTotal = Math.round((pToBe + pCont + pChat) / 3);
 
-        async function speakSentence(text) {
-            if (geminiApiKey) {
-                if (audioCache[text]) {
-                    playAudioFromPCM16Base64(audioCache[text]);
-                    return;
-                }
-
-                try {
-                    showToast("Generando audio con Gemini TTS...", "sparkles", "text-purple-500");
-                    const audioBase64 = await getGeminiTTS(text, preferredVoice);
-                    if (audioBase64) {
-                        audioCache[text] = audioBase64;
-                        playAudioFromPCM16Base64(audioBase64);
-                    } else {
-                        throw new Error("No se obtuvo data de audio.");
-                    }
-                } catch(e) {
-                    console.error("Gemini TTS falló, recurriendo a Web Speech API:", e);
-                    speakWithWebSpeech(text);
-                }
-            } else {
-                speakWithWebSpeech(text);
-            }
-        }
-
-        function speakWithWebSpeech(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                
-                const voices = window.speechSynthesis.getVoices();
-                const googleVoice = voices.find(voice => voice.name.includes('Google US English') || voice.lang === 'en-US');
-                if (googleVoice) {
-                    utterance.voice = googleVoice;
-                }
-                
-                window.speechSynthesis.speak(utterance);
-            } else {
-                showToast("Tu navegador no soporta síntesis de voz.", "alert-triangle", "text-red-500");
-            }
-        }
-
-        async function getGeminiTTS(text, voice) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiApiKey}`;
-            const headers = { 'Content-Type': 'application/json' };
-            
+            // Payload optimizado con las columnas que tu excel espera recibir
             const payload = {
-                contents: [{
-                    parts: [{ text: `Say clearly: ${text}` }]
-                }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: {
-                        voiceConfig: {
-                            prebuiltVoiceConfig: {
-                                voiceName: voice
-                            }
-                        }
-                    }
-                }
+                fecha: new Date().toLocaleString("es-ES"),
+                email: appState.student.email,
+                nombre: appState.student.name,
+                seccion: motivo,
+                progreso: `Gramática: ${pToBe}% | Continuous: ${pCont}% | Conversación IA: ${pChat}% (Total Promedio: ${pTotal}%)`
             };
 
-            let retries = 3;
-            let delay = 1000;
-            while (retries > 0) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (!response.ok) throw new Error("Error en la respuesta del servidor Gemini.");
-                    
-                    const data = await response.json();
-                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-                    if (audioPart && audioPart.inlineData.data) {
-                        return audioPart.inlineData.data;
-                    }
-                    throw new Error("No se encontró parte de audio en el JSON.");
-                } catch (err) {
-                    retries--;
-                    if (retries === 0) throw err;
-                    await new Promise(res => setTimeout(res, delay));
-                    delay *= 2;
-                }
-            }
-        }
-
-        function playAudioFromPCM16Base64(base64Data) {
             try {
-                const binaryString = atob(base64Data);
-                const len = binaryString.length;
-                const bytes = new Uint8Array(len);
-                for (let i = 0; i < len; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
-                }
-                
-                const sampleRate = 24000; 
-                const wavHeader = new ArrayBuffer(44);
-                const view = new DataView(wavHeader);
-                
-                writeString(view, 0, 'RIFF');
-                view.setUint32(4, 36 + bytes.length, true);
-                writeString(view, 8, 'WAVE');
-                writeString(view, 12, 'fmt ');
-                view.setUint32(16, 16, true);
-                view.setUint16(20, 1, true);
-                view.setUint16(22, 1, true);
-                view.setUint32(24, sampleRate, true);
-                view.setUint32(28, sampleRate * 2, true);
-                view.setUint16(32, 2, true);
-                view.setUint16(34, 16, true);
-                writeString(view, 36, 'data');
-                view.setUint32(40, bytes.length, true);
-                
-                const blob = new Blob([wavHeader, bytes], { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(blob);
-                const audio = new Audio(audioUrl);
-                audio.play();
-            } catch(e) {
-                console.error("Fallo al reproducir PCM16:", e);
-                showToast("Error de decodificación de audio de IA.", "alert-triangle", "text-red-500");
+                // Hacemos el envío en segundo plano
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: "POST",
+                    mode: "no-cors", // Evita problemas de CORS en peticiones de dominios cruzados
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // Google Apps Script con mode no-cors devuelve un opaco, asumimos éxito si no salta catch
+                evaluarIndicadorSincronizacion('sincronizado');
+            } catch (error) {
+                console.error("Error al sincronizar con Google Sheets:", error);
+                evaluarIndicadorSincronizacion('error');
             }
         }
 
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
+        function evaluarIndicadorSincronizacion(estado) {
+            const badge = document.getElementById('sync-status');
+            const dot = document.getElementById('sync-dot');
+            const txt = document.getElementById('sync-text');
 
-        function speakCurrentSentence() {
-            const data = s1Exercises[currentS1Index];
-            const fullSentence = data.prompt.replace("___", data.solution);
-            speakSentence(fullSentence);
-        }
-
-        function speakShadowingSentence() {
-            const data = s2Exercises[currentS2Index];
-            speakSentence(data.text);
-        }
-
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.lang = 'en-US';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-
-                recognition.onerror = function(event) {
-                    if (event.error === 'no-speech') {
-                        showToast("No se detectó voz. Habla fuerte y claro cerca de tu micrófono.", "mic-off", "text-amber-500");
-                    } else {
-                        showToast("Permiso de micrófono denegado.", "mic-off", "text-red-500");
-                    }
-                    stopAllRecordingsUI();
-                };
-
-                recognition.onend = function() {
-                    stopAllRecordingsUI();
-                };
-            }
-        }
-
-        function startListening(targetInputId) {
-            if (!recognition) {
-                showToast("Navegador no soportado para dictado de voz. Usa Chrome o Edge.", "alert-triangle", "text-yellow-500");
+            if (!appState.student.email) {
+                badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+                dot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+                txt.innerText = "Sin Identificar";
                 return;
             }
 
-            if (isRecording) {
-                recognition.stop();
+            switch(estado) {
+                case 'sincronizando':
+                    badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 animate-pulse";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+                    txt.innerText = "Sincronizando...";
+                    break;
+                case 'sincronizado':
+                    badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    txt.innerText = "🟢 Sincronizado";
+                    break;
+                case 'error':
+                    badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-400";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                    txt.innerText = "⚠️ Error de red";
+                    break;
+                case 'reposo':
+                default:
+                    badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400";
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-blue-500";
+                    txt.innerText = "Listo para Sincronizar";
+                    break;
+            }
+        }
+
+        // --- CONEXIÓN DIRECTA CON EL CHAT DE TUTORÍA GEMINI ---
+        async function consultarTutorIA() {
+            const userMsg = document.getElementById('ai-user-message').value.trim();
+            const responseBox = document.getElementById('ai-response-box');
+            const responseText = document.getElementById('ai-response-text');
+            const btn = document.getElementById('send-ai-btn');
+
+            if (!appState.api_key) {
+                showToast("Por favor, introduce tu Clave API de Gemini en el panel lateral.", "alert-triangle", "text-amber-500");
                 return;
             }
 
-            isRecording = true;
-            document.getElementById(`mic-${targetInputId}`).classList.add('text-red-500', 'animate-pulse');
-            document.getElementById(`dictation-status-${targetInputId}`).classList.remove('hidden');
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                const cleanedText = transcript.replace(/\.$/, "");
-                document.getElementById(targetInputId).value = cleanedText;
-                showToast(`Entendido: "${cleanedText}"`, "check", "text-green-500");
-            };
-
-            recognition.start();
-        }
-
-        function startShadowingRecording() {
-            if (!recognition) {
-                showToast("Tu navegador no soporta dictado de voz.", "alert-triangle", "text-yellow-500");
+            if (!userMsg) {
+                showToast("El mensaje no puede estar vacío.", "message-square", "text-amber-500");
                 return;
             }
 
-            if (isRecording) {
-                recognition.stop();
-                return;
-            }
-
-            isRecording = true;
-            document.getElementById('mic-shadow').classList.add('text-yellow-400', 'animate-spin');
-            document.getElementById('btn-shadow-text').innerText = "Escuchando...";
-            document.getElementById('dictation-status-shadow').classList.remove('hidden');
-
-            recognition.onresult = function(event) {
-                const userTranscript = event.results[0][0].transcript;
-                processShadowingResult(userTranscript);
-            };
-
-            recognition.start();
-        }
-
-        function stopAllRecordingsUI() {
-            isRecording = false;
-            const micS1 = document.getElementById('mic-s1-input');
-            if (micS1) micS1.className = "w-5 h-5";
-            const statS1 = document.getElementById('dictation-status-s1-input');
-            if (statS1) statS1.classList.add('hidden');
-
-            const micS3 = document.getElementById('mic-s3-input');
-            if (micS3) micS3.className = "w-5 h-5";
-            const statS3 = document.getElementById('dictation-status-s3-input');
-            if (statS3) statS3.classList.add('hidden');
-
-            const micShadow = document.getElementById('mic-shadow');
-            if (micShadow) micShadow.className = "w-4.5 h-4.5";
-            const btnShadowText = document.getElementById('btn-shadow-text');
-            if (btnShadowText) btnShadowText.innerText = "Grabar mi Voz";
-            const statShadow = document.getElementById('dictation-status-shadow');
-            if (statShadow) statShadow.classList.add('hidden');
-        }
-
-        function processShadowingResult(userText) {
-            const originalText = s2Exercises[currentS2Index].text;
-            const clean = str => str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
-            const cleanUser = clean(userText);
-            const cleanOriginal = clean(originalText);
-
-            const score = calculateStringSimilarity(cleanOriginal, cleanUser);
-            const roundedScore = Math.round(score * 100);
-
-            document.getElementById('shadowing-analysis-box').classList.remove('hidden');
-            document.getElementById('user-said-text').innerText = `"${userText}"`;
-            document.getElementById('pronunciation-score').innerText = `${roundedScore}%`;
-            document.getElementById('score-bar').style.width = `${roundedScore}%`;
-
-            let feedbackMsg = "";
-            if (roundedScore >= 85) {
-                feedbackMsg = "¡Increíble! Tu pronunciación y entonación son dignas de un nativo. ¡Excelente trabajo!";
-                document.getElementById('pronunciation-score').className = "text-lg font-black text-emerald-500";
-                document.getElementById('score-bar').className = "h-full bg-emerald-500 transition-all";
-                markShadowingStepCompleted(true);
-            } else if (roundedScore >= 60) {
-                feedbackMsg = "¡Buen intento! Se entiende bastante bien, pero puedes ajustar un poco más la pronunciación de las palabras individuales. Inténtalo de nuevo.";
-                document.getElementById('pronunciation-score').className = "text-lg font-black text-yellow-500";
-                document.getElementById('score-bar').className = "h-full bg-yellow-500 transition-all";
-            } else {
-                feedbackMsg = "Parece que algunas palabras no coincidieron bien. Intenta escuchar nuevamente la oración de ejemplo y repite.";
-                document.getElementById('pronunciation-score').className = "text-lg font-black text-red-500";
-                document.getElementById('score-bar').className = "h-full bg-red-500 transition-all";
-            }
-
-            document.getElementById('pronunciation-feedback-text').innerText = feedbackMsg;
-        }
-
-        function calculateStringSimilarity(str1, str2) {
-            const words1 = str1.split(/\s+/);
-            const words2 = str2.split(/\s+/);
-            const set1 = new Set(words1);
-            const set2 = new Set(words2);
-            
-            const intersection = new Set([...set1].filter(x => set2.has(x)));
-            const union = new Set([...set1, ...set2]);
-            
-            return intersection.size / union.size;
-        }
-
-        function checkSection1Answer() {
-            const val = document.getElementById('s1-input').value.trim();
-            const data = s1Exercises[currentS1Index];
-            const feedbackEl = document.getElementById('s1-feedback');
-
-            if (!val) {
-                showToast("Por favor ingresa una respuesta primero.", "alert-circle", "text-yellow-500");
-                return;
-            }
-
-            const clean = str => str.toLowerCase()
-                .replace(/is not/g, "isn't")
-                .replace(/are not/g, "aren't")
-                .replace(/am not/g, "aren't") 
-                .replace(/[^a-z0-9]/g, "")
-                .trim();
-
-            const userCleaned = clean(val);
-            const solutionCleaned = clean(data.solution);
-            
-            const fullCorrectSentence = data.prompt.replace("___", data.solution);
-            const fullCleaned = clean(fullCorrectSentence);
-
-            const isCorrect = (userCleaned === solutionCleaned) || (userCleaned === fullCleaned);
-
-            feedbackEl.classList.remove('hidden');
-            if (isCorrect) {
-                feedbackEl.className = "rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300 space-y-4 animate-fade-in";
-                feedbackEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-emerald-500 shrink-0 mt-0.5"></i>
-                        <div>
-                            <p class="font-bold text-lg">¡Respuesta Correcta!</p>
-                            <p class="text-sm mt-1">${data.context}</p>
-                            <p class="text-xs font-semibold uppercase text-emerald-600 dark:text-emerald-400 mt-2">Oración final: "${data.prompt.replace("___", data.solution)}"</p>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('s1-blank').innerText = data.solution;
-                document.getElementById('s1-blank').className = "text-emerald-500 px-4 py-1 font-extrabold";
-
-                progress.tab1[currentS1Index] = true;
-                saveProgressToStorage();
-
-                const s1Btn = document.getElementById('s1-action-btn');
-                if (s1Btn) {
-                    s1Btn.onclick = nextExercise;
-                    s1Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2 animate-bounce-once";
-                    s1Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
-                }
-            } else {
-                feedbackEl.className = "rounded-2xl p-4 border bg-red-500/10 border-red-500/20 text-red-800 dark:text-red-300";
-                feedbackEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="x-circle" class="w-6 h-6 text-red-500 shrink-0 mt-0.5"></i>
-                        <div>
-                            <p class="font-bold text-lg">Respuesta Incorrecta</p>
-                            <p class="text-sm mt-1">Tu respuesta: <span class="line-through">"${val}"</span>. Inténtalo de nuevo o revisa las reglas gramaticales básicas de A1.</p>
-                            <button id="btn-reveal-s1" class="mt-2 text-xs font-bold text-blue-500 hover:underline">Revelar respuesta correcta</button>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('btn-reveal-s1').onclick = revealSection1Answer;
-            }
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Analizando...`;
             lucide.createIcons();
-        }
 
-        function revealSection1Answer() {
-            const data = s1Exercises[currentS1Index];
-            document.getElementById('s1-input').value = data.solution;
-            showToast("Respuesta cargada", "info", "text-blue-500");
-        }
-
-        function completeShadowing() {
-            markShadowingStepCompleted(false);
-        }
-
-        function markShadowingStepCompleted(auto) {
-            progress.tab2[currentS2Index] = true;
-            saveProgressToStorage();
-            
-            const feedbackEl = document.getElementById('s2-feedback');
-            feedbackEl.classList.remove('hidden');
-            feedbackEl.className = "rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/20 text-emerald-800 dark:text-emerald-300 space-y-4";
-            feedbackEl.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <i data-lucide="check" class="w-6 h-6 text-emerald-500 shrink-0 mt-0.5"></i>
-                    <div>
-                        <p class="font-bold text-md">${auto ? '¡Excelente pronunciación (≥85%)! Ejercicio aprobado.' : '¡Ejercicio marcado como completado!'}</p>
-                        <p class="text-xs mt-1">Has dominado la entonación de esta oración de nivel A1.</p>
-                    </div>
-                </div>
-            `;
-
-            const s2Btn = document.getElementById('s2-action-btn');
-            if (s2Btn) {
-                s2Btn.onclick = nextExercise;
-                s2Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
-                s2Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
-            }
-
+            responseBox.classList.remove('hidden');
+            responseText.innerHTML = `<div class="flex items-center gap-2 text-slate-400"><i data-lucide="loader" class="w-4 h-4 animate-spin"></i> El tutor de IA está evaluando tu gramática...</div>`;
             lucide.createIcons();
-        }
 
-        function checkSection3Answer() {
-            const val = document.getElementById('s3-input').value.trim().toLowerCase();
-            const data = s3Exercises[currentS3Index];
-            const feedbackEl = document.getElementById('s3-feedback');
+            try {
+                // API URL para el modelo Gemini 1.5 Flash (ideal para correcciones rápidas y gratis)
+                const apiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${appState.api_key}`;
 
-            if (!val) {
-                showToast("Por favor formula una pregunta primero.", "alert-circle", "text-yellow-500");
-                return;
-            }
+                const systemInstruction = "Eres un tutor experto de inglés como segundo idioma. Tu tarea es recibir textos cortos de nivel principiante (A1) creados por estudiantes que practican el verbo 'To Be' o el 'Present Continuous'. Analiza el mensaje, felicita al estudiante si lo hizo bien, corrige cualquier error ortográfico o gramatical de forma muy amigable, y explícaselo brevemente en español.";
 
-            const cleanedInput = val.replace(/[?¿]/g, "").trim();
-            const cleanedSolution = data.solution.toLowerCase().replace(/[?¿]/g, "").trim();
+                const response = await fetch(apiURL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `${systemInstruction}\n\nMensaje del estudiante: "${userMsg}"`
+                            }]
+                        }]
+                    })
+                });
 
-            const isCorrect = compareAnswers(cleanedInput, cleanedSolution);
+                const json = await response.json();
+                
+                if (json.candidates && json.candidates[0].content.parts[0].text) {
+                    const rawReply = json.candidates[0].content.parts[0].text;
+                    
+                    // Convertir saltos de línea de Markdown a saltos HTML para legibilidad
+                    const formattedReply = rawReply
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-            feedbackEl.classList.remove('hidden');
-            if (isCorrect) {
-                feedbackEl.className = "rounded-2xl p-4 border bg-purple-500/10 border-purple-500/20 text-purple-800 dark:text-purple-300 space-y-4";
-                feedbackEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-purple-500 shrink-0 mt-0.5"></i>
-                        <div>
-                            <p class="font-bold text-lg">¡Excelente Pregunta!</p>
-                            <p class="text-sm mt-1">${data.context}</p>
-                            <p class="text-xs font-bold text-purple-600 dark:text-purple-400 mt-2">Pregunta perfecta: "${data.solution}"</p>
-                        </div>
-                    </div>
-                `;
-                progress.tab3[currentS3Index] = true;
-                saveProgressToStorage();
+                    responseText.innerHTML = formattedReply;
 
-                const s3Btn = document.getElementById('s3-action-btn');
-                if (s3Btn) {
-                    s3Btn.onclick = nextExercise;
-                    s3Btn.className = "px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-md flex items-center gap-2";
-                    s3Btn.innerHTML = `<span>Siguiente Ejercicio</span><i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+                    // Aumentar recuento de progreso del Chat
+                    appState.progress.chat.count++;
+                    localStorage.setItem('english_center_chat_count', appState.progress.chat.count);
+                    calcularTodoElProgreso(); // Sincroniza al Excel automáticamente
+                } else {
+                    throw new Error("Formato de respuesta inesperado");
                 }
-            } else {
-                feedbackEl.className = "rounded-2xl p-4 border bg-red-500/10 border-red-500/20 text-red-800 dark:text-red-300";
-                feedbackEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <i data-lucide="x-circle" class="w-6 h-6 text-red-500 shrink-0 mt-0.5"></i>
-                        <div>
-                            <p class="font-bold text-lg">Estructura incorrecta</p>
-                            <p class="text-sm mt-1">Recuerda iniciar con el verbo auxiliar o Wh-word. Tu respuesta actual: "${val}".</p>
-                            <button id="btn-reveal-s3" class="mt-2 text-xs font-bold text-purple-500 hover:underline">Revelar pregunta sugerida</button>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('btn-reveal-s3').onclick = revealSection3Answer;
+
+            } catch (err) {
+                console.error("Error en tutoría:", err);
+                responseText.innerHTML = `<span class="text-red-500">Error al comunicarse con la IA. Asegúrate de que tu API Key sea válida e inténtalo de nuevo.</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i> Enviar a Tutor IA`;
+                lucide.createIcons();
             }
-            lucide.createIcons();
         }
 
-        function revealSection3Answer() {
-            const data = s3Exercises[currentS3Index];
-            document.getElementById('s3-input').value = data.solution;
-            showToast("Pregunta sugerida cargada", "info", "text-purple-500");
-        }
-
-        function compareAnswers(a, b) {
-            const clean = str => str.toLowerCase()
-                .replace(/is not/g, "isn't")
-                .replace(/are not/g, "aren't")
-                .replace(/am not/g, "aren't") 
-                .replace(/what is/g, "what's")
-                .replace(/where is/g, "where's")
-                .replace(/who is/g, "who's")
-                .replace(/[^a-z0-9]/g, "")
-                .trim();
-
-            return clean(a) === clean(b);
-        }
-
-        function showToast(message, iconName = "info", colorClass = "text-blue-400") {
+        // --- SISTEMA DE NOTIFICACIONES (TOASTS) ---
+        function showToast(message, iconName = "info", colorClass = "text-blue-500") {
             const toast = document.getElementById('toast-notif');
             const text = document.getElementById('toast-text');
             const icon = document.getElementById('toast-icon');
@@ -1782,35 +701,30 @@
             lucide.createIcons();
 
             toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
             setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            }, 3500);
         }
 
-        // Vincular funciones globales seguras al objeto window para invocaciones inline onclick
-        window.toggleDarkMode = toggleDarkMode;
-        window.toggleGeminiModal = toggleGeminiModal;
-        window.loginWithGoogleOAuth = loginWithGoogleOAuth;
-        window.saveGeminiSettings = saveGeminiSettings;
-        window.clearGeminiSettings = clearGeminiSettings;
-        window.toggleApiKeyVisibility = toggleApiKeyVisibility;
-        window.switchTab = switchTab;
-        window.jumpToExercise = jumpToExercise;
-        window.prevExercise = prevExercise;
-        window.nextExercise = nextExercise;
-        window.speakCurrentSentence = speakCurrentSentence;
-        window.speakShadowingSentence = speakShadowingSentence;
-        window.startListening = startListening;
-        window.startShadowingRecording = startShadowingRecording;
-        window.checkSection1Answer = checkSection1Answer;
-        window.completeShadowing = completeShadowing;
-        window.checkSection3Answer = checkSection3Answer;
-        window.requestResetAllProgress = requestResetAllProgress;
-        window.closeConfirmModal = closeConfirmModal;
-        window.clearAudioCache = clearAudioCache;
+        // --- TEMA CLARO / OSCURO TOGGLE ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                themeIcon.setAttribute('data-lucide', 'moon');
+                themeIcon.className = 'w-5 h-5 text-indigo-500';
+            } else {
+                document.documentElement.classList.add('dark');
+                themeIcon.setAttribute('data-lucide', 'sun');
+                themeIcon.className = 'w-5 h-5 text-yellow-500';
+            }
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
