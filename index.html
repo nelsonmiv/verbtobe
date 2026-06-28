@@ -16,6 +16,25 @@
                         darkCard: '#1e293b',
                         accentBlue: '#3b82f6',
                         accentGreen: '#10b981',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        pulseOnce: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.02)' },
+                        },
+                        bounceOnce: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-4px)' },
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'pulse-once': 'pulseOnce 0.6s ease-in-out 1',
+                        'bounce-once': 'bounceOnce 0.6s ease-in-out 1'
                     }
                 }
             }
@@ -44,7 +63,7 @@
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Configuración Gemini API / Google OAuth -->
                 <button onclick="toggleGeminiModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-all">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400 animate-spin-slow"></i>
                     <span>Gemini TTS</span>
                     <span id="gemini-badge" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                 </button>
@@ -64,7 +83,7 @@
         </header>
 
         <!-- PROGRESS BAR GENERAL -->
-        <section class="bg-white dark:bg-darkCard rounded-2xl p-5 mb-8 shadow-sm border border-slate-100 dark:border-slate-800">
+        <section class="bg-white dark:bg-darkCard rounded-2xl p-5 mb-8 shadow-sm border border-slate-100 dark:border-slate-800 animate-fade-in">
             <h2 class="text-md font-bold mb-3 flex items-center gap-2">
                 <i data-lucide="trophy" class="text-yellow-500 w-5 h-5"></i>
                 Tu Progreso General (A1)
@@ -94,7 +113,7 @@
             </div>
             <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400">
                 <span id="global-percentage">Progreso Total: 0%</span>
-                <button onclick="requestResetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1">
+                <button onclick="requestResetAllProgress()" class="text-red-500 hover:underline flex items-center gap-1 transition-colors hover:text-red-600">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Reiniciar Progreso
                 </button>
             </div>
@@ -172,7 +191,7 @@
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
                             <label class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Escribe la palabra faltante u oración completa:</label>
-                            <span class="text-xs text-slate-400 italic">¡Se permite escribir toda la frase!</span>
+                            <span class="text-xs text-slate-400 italic font-medium">¡Se permite escribir toda la frase!</span>
                         </div>
                         <div class="relative">
                             <input type="text" id="s1-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-lg text-slate-900 dark:text-white" placeholder="Ej: isn't / They aren't studying tonight" autocomplete="off">
@@ -300,7 +319,7 @@
                     <div class="space-y-3">
                         <label id="s3-input-label" class="block text-sm font-semibold text-slate-600 dark:text-slate-400">Tu pregunta formulada:</label>
                         <div class="relative">
-                            <input type="text" id="s3-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-lg text-slate-900 dark:text-white animate-pulse-once" placeholder="Ej: Are you studying english? / Is he running?" autocomplete="off">
+                            <input type="text" id="s3-input" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-lg text-slate-900 dark:text-white" placeholder="Ej: Are you studying english? / Is he running?" autocomplete="off">
                             <button onclick="startListening('s3-input')" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-purple-500 transition-all" title="Dictar respuesta">
                                 <i data-lucide="mic" id="mic-s3-input" class="w-5 h-5"></i>
                             </button>
@@ -332,25 +351,35 @@
         </footer>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN EXCLUSIVO CON GOOGLE OAUTH -->
+    <!-- MODAL DE CONFIGURACIÓN CON GOOGLE OAUTH & TROUBLESHOOTER -->
     <div id="gemini-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden px-4">
-        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 overflow-y-auto max-h-[90vh]">
+        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 overflow-y-auto max-h-[92vh] animate-fade-in">
             <div class="flex justify-between items-start">
                 <div class="flex items-center gap-2">
-                    <i data-lucide="sparkles" class="w-6 h-6 text-purple-500"></i>
+                    <i data-lucide="sparkles" class="w-6 h-6 text-purple-500 animate-pulse"></i>
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white">Conectar Gemini TTS</h3>
                 </div>
-                <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                <button onclick="toggleGeminiModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
             <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Utiliza la síntesis de voz de alta fidelidad <strong>Gemini TTS</strong> conectando tu cuenta de estudiante. Las peticiones correrán de forma segura bajo tu propia cuenta de Google.
+                Utiliza la síntesis de voz de alta fidelidad <strong>Gemini TTS</strong> conectando tu cuenta. Las peticiones correrán de forma segura bajo tu propia cuenta de Google, consumiendo únicamente tus cuotas de estudiante gratuitas.
             </p>
 
+            <!-- TABS DE CONFIGURACIÓN / AYUDA DE REDIRECCIONAMIENTO -->
+            <div class="flex border-b border-slate-200 dark:border-slate-800">
+                <button onclick="switchModalTab('settings')" id="modal-tab-settings" class="flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500 transition-all">
+                    Configuración
+                </button>
+                <button onclick="switchModalTab('help')" id="modal-tab-help" class="flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300 transition-all">
+                    ¿Error de Redirección / OAuth?
+                </button>
+            </div>
+
             <!-- PANEL DE CONFIGURACIÓN DIRECTA -->
-            <div class="space-y-4">
+            <div id="modal-panel-settings" class="space-y-4">
                 <!-- Tarjeta informativa de Google -->
                 <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900/30">
                     <p class="text-xs text-blue-800 dark:text-blue-300">
@@ -359,7 +388,7 @@
                 </div>
 
                 <!-- ESTADO DEL PERFIL CONECTADO (Inyectado dinámicamente si hay sesión) -->
-                <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div id="oauth-profile-card" class="hidden flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 animate-fade-in">
                     <img id="oauth-profile-img" src="" class="w-10 h-10 rounded-full border border-purple-400 object-cover" alt="Perfil">
                     <div class="overflow-hidden">
                         <p id="oauth-profile-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Cargando...</p>
@@ -369,7 +398,7 @@
 
                 <!-- BOTON DE CONECTAR CON GOOGLE -->
                 <div class="flex flex-col items-center justify-center py-1 space-y-2">
-                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-sm transition-all shadow-sm">
+                    <button onclick="loginWithGoogleOAuth()" class="flex items-center justify-center gap-3 w-full py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-[0.98]">
                         <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.57-5.17 3.57-8.73z"/>
                             <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.13 0-5.78-2.11-6.73-4.96H1.21v3.15C3.18 21.88 7.31 24 12 24z"/>
@@ -381,18 +410,55 @@
                     <!-- INDICADOR DE EXPIRACION -->
                     <p id="oauth-status" class="text-xs text-slate-400 italic text-center hidden"></p>
                 </div>
+
+                <!-- SELECCIONADOR DE VOZ COMUN -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
+                    <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+                        <option value="Kore">Kore (Voz Clara Estándar)</option>
+                        <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
+                        <option value="Charon">Charon (Tono Profundo)</option>
+                        <option value="Leda">Leda (Femenino Suave)</option>
+                        <option value="Puck">Puck (Juvenil)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- SELECCIONADOR DE VOZ COMUN -->
-            <div class="space-y-2">
-                <label class="block text-xs font-bold uppercase text-slate-400">Voz Preferida</label>
-                <select id="gemini-voice-select" onchange="clearAudioCache()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white">
-                    <option value="Kore">Kore (Voz Clara Estándar)</option>
-                    <option value="Zephyr">Zephyr (Estilo Alegre / Dinámico)</option>
-                    <option value="Charon">Charon (Tono Profundo)</option>
-                    <option value="Leda">Leda (Femenino Suave)</option>
-                    <option value="Puck">Puck (Juvenil)</option>
-                </select>
+            <!-- CONTENEDOR 2: PESTAÑA DE DIAGNÓSTICO EN TIEMPO REAL -->
+            <div id="modal-panel-help" class="hidden space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                <div class="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
+                    <h4 class="text-xs font-bold text-rose-500 flex items-center gap-1.5">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i> ¿Error de redirección de Google?
+                    </h4>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-semibold">
+                        Para que Google Cloud autorice el login, debes dar de alta la URL de origen exacta y el redireccionamiento dentro de tus credenciales OAuth 2.0.
+                    </p>
+                </div>
+
+                <!-- HERRAMIENTA DE DIAGNÓSTICO EN TIEMPO REAL -->
+                <div class="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-xl space-y-2">
+                    <span class="text-xs font-bold text-purple-400 block uppercase tracking-wider">Tu Origen Actual Detectado:</span>
+                    <div id="diagnostic-origin-container" class="bg-slate-900/60 p-2.5 rounded font-mono text-[11px] select-all border border-slate-700/50 break-all text-white">
+                        Obteniendo origen...
+                    </div>
+                    <div id="diagnostic-advice" class="text-[10px] text-slate-400">
+                        <!-- Inyectado dinámicamente -->
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Cómo solucionarlo rápido:</h5>
+                    
+                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
+                        <p class="font-bold text-purple-400">1. Abre tu consola Cloud de Google</p>
+                        <p class="text-[11px] text-slate-500">Ve a tu sección de Credenciales de OAuth 2.0 en Google Developer Console.</p>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
+                        <p class="font-bold text-purple-400">2. Copia el Origen de arriba</p>
+                        <p class="text-[11px] text-slate-500 font-medium">Agrégalo exactamente igual en la sección de "Orígenes de JavaScript autorizados" y "URIs de redireccionamiento autorizadas" incluyendo la barra final si es necesario.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- BOTONES DE ACCIÓN GENERAL -->
@@ -520,7 +586,7 @@
             { id: 32, text: "My dog is running after a ball.", translation: "Mi perro está corriendo tras una pelota." },
             { id: 33, text: "They are not eating fast food.", translation: "Ellos no están comiendo comida rápida." },
             { id: 34, text: "I am cleaning my room now.", translation: "Estoy limpiando mi habitación ahora." },
-            { id: 35, text: "He is painting a picture.", translation: "Él está pintando un cuadro." },
+            { id: 35, text: "He is painting a picture.", translation: "Él está painting un cuadro." },
             { id: 36, text: "The computer is working perfectly.", translation: "La computadora está funcionando perfectamente." },
             { id: 37, text: "You are speaking English well.", translation: "Estás hablando inglés muy bien." },
             { id: 38, text: "We are not watching the game.", translation: "Nosotros no estamos viendo el partido." },
@@ -532,7 +598,7 @@
             { id: 44, text: "He is not wearing his glasses.", translation: "Él no está usando sus lentes." },
             { id: 45, text: "We are building a sandcastle.", translation: "Estamos construyendo un castillo de arena." },
             { id: 46, text: "The flowers are opening in spring.", translation: "Las flores se están abriendo en primavera." },
-            { id: 47, text: "You are learning very quickly.", transition: "Estás haciendo progresos muy rápidos." },
+            { id: 47, text: "You are learning very quickly.", translation: "Estás haciendo progresos muy rápidos." },
             { id: 48, text: "It is not snowing this morning.", translation: "No está nevando esta mañana." },
             { id: 49, text: "I am opening the main door.", translation: "Estoy abriendo la puerta principal." },
             { id: 50, text: "They are celebrating a birthday.", translation: "Ellos están celebrando un cumpleaños." }
@@ -595,7 +661,7 @@
 
     <!-- MOTOR LÓGICO DE LA APP -->
     <script>
-        // Adaptador seguro para almacenamiento local en el navegador
+        // Adaptador seguro para almacenamiento local en el navegador (resiliente a bloqueos de iframe/privacidad)
         const memoryStorage = {};
         const safeStorage = {
             getItem: function(key) {
@@ -639,7 +705,7 @@
         // Caché en memoria para audios pre-generados de Gemini TTS (Clave: Texto, Valor: Base64 PCM16)
         let audioCache = {};
 
-        // Métodos de autenticación y claves (Client ID harcodeado fijamente)
+        // Métodos de autenticación y claves (Client ID de Google Cloud verificado)
         const googleClientId = '1050263760705-9lp9gkpnr9qe15qf46ijdedcn0k7c5dp.apps.googleusercontent.com';
         let googleAccessToken = '';
         let googleTokenExpiry = 0; // Timestamp en ms
@@ -658,7 +724,7 @@
         let recognition;
         let isRecording = false;
 
-        // Inicialización
+        // Inicialización de la aplicación
         window.onload = function() {
             lucide.createIcons();
             loadProgressFromStorage();
@@ -668,6 +734,7 @@
             loadExerciseData();
             initSpeechRecognition();
             initGoogleOAuthClient();
+            runDiagnostics();
         };
 
         // Cambiar Modo de Luz / Oscuro
@@ -710,6 +777,55 @@
                     showToast("Todo el progreso ha sido reiniciado", "trash-2", "text-red-500");
                 }
             );
+        }
+
+        // Lógica de diagnóstico de redireccionamiento y orígenes autorizados
+        function runDiagnostics() {
+            const originContainer = document.getElementById('diagnostic-origin-container');
+            const adviceContainer = document.getElementById('diagnostic-advice');
+            if (!originContainer) return;
+
+            const currentOrigin = window.location.origin;
+            originContainer.innerText = currentOrigin;
+
+            if (currentOrigin.startsWith('file://')) {
+                adviceContainer.innerHTML = `
+                    <span class="text-rose-500 font-bold">⚠️ ALERTA CRÍTICA:</span> Estás abriendo el HTML de forma directa en tu disco duro. Google OAuth <strong>no permite</strong> solicitudes desde <code class="bg-slate-200 dark:bg-slate-800 text-rose-400 px-1 py-0.5 rounded font-mono">file://</code>. Debes correr tu proyecto sobre un servidor local (como Live Server en VS Code) o subirlo a GitHub Pages.
+                `;
+            } else if (currentOrigin.includes('github.io')) {
+                adviceContainer.innerHTML = `
+                    <span class="text-emerald-400 font-bold">✓ GitHub Pages activo:</span> Asegúrate de que hayas agregado <code class="bg-slate-200 dark:bg-slate-800 text-emerald-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> exactamente así, sin barra diagonal final, a tus orígenes en Google Cloud Platform.
+                `;
+            } else if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
+                adviceContainer.innerHTML = `
+                    <span class="text-blue-400 font-bold">✓ Entorno Local:</span> Todo listo para pruebas locales. Solo recuerda agregar <code class="bg-slate-200 dark:bg-slate-800 text-blue-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> a tus credenciales de cliente OAuth.
+                `;
+            } else {
+                adviceContainer.innerHTML = `
+                    <span class="text-amber-400 font-bold">ⓘ Servidor Remoto:</span> Asegúrate de tener registrado <code class="bg-slate-200 dark:bg-slate-800 text-amber-400 px-1 py-0.5 rounded font-mono">${currentOrigin}</code> en tu Consola de Desarrolladores de Google.
+                `;
+            }
+        }
+
+        // Alternar paneles de configuración y diagnóstico en el modal de Gemini
+        function switchModalTab(tab) {
+            const settingsBtn = document.getElementById('modal-tab-settings');
+            const helpBtn = document.getElementById('modal-tab-help');
+            const settingsPanel = document.getElementById('modal-panel-settings');
+            const helpPanel = document.getElementById('modal-panel-help');
+
+            if (tab === 'settings') {
+                settingsBtn.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500";
+                helpBtn.className = "flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300";
+                settingsPanel.classList.remove('hidden');
+                helpPanel.classList.add('hidden');
+            } else {
+                helpBtn.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-500";
+                settingsBtn.className = "flex-1 pb-2 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-300";
+                settingsPanel.classList.add('hidden');
+                helpPanel.classList.remove('hidden');
+            }
+            lucide.createIcons();
         }
 
         // Lógica de Modales de confirmación Custom
@@ -806,7 +922,7 @@
                 const minLeft = Math.round((googleTokenExpiry - now) / 60000);
                 oauthStatusText.classList.remove('hidden');
                 oauthStatusText.innerHTML = `Sesión Google activa. Expira en ~${minLeft} min.`;
-                oauthStatusText.className = "text-xs text-emerald-500 font-semibold text-center";
+                oauthStatusText.className = "text-xs text-emerald-500 font-semibold text-center mt-1";
                 oauthBtnText.innerText = "¡Cuenta Google Vinculada!";
 
                 // Renderizar perfil de Google del estudiante
@@ -824,7 +940,7 @@
                 badge.classList.add('bg-red-500');
                 oauthStatusText.classList.remove('hidden');
                 oauthStatusText.innerText = "No has vinculado tu cuenta de Google.";
-                oauthStatusText.className = "text-xs text-red-500 font-medium text-center";
+                oauthStatusText.className = "text-xs text-red-500 font-medium text-center mt-1";
                 oauthBtnText.innerText = "Vincular Cuenta Google";
                 profileCard.classList.add('hidden');
             }
@@ -836,6 +952,7 @@
             if (!modal.classList.contains('hidden')) {
                 lucide.createIcons();
                 updateAuthBadgeUI();
+                runDiagnostics();
             }
         }
 
@@ -959,6 +1076,7 @@
         // Construir selectores de ejercicio (1-50)
         function buildExerciseSelectors() {
             const selector = document.getElementById('exercise-selector');
+            if (!selector) return;
             selector.innerHTML = '';
             
             let currentIdx = getActiveIndex();
@@ -1025,7 +1143,7 @@
 
             if (activeTab === 'tab1') {
                 const data = s1Exercises[idx];
-                document.getElementById('s1-prompt').innerHTML = data.prompt.replace("___", `<span class="border-b-2 border-dashed border-blue-500 text-blue-500 px-4 py-1 font-extrabold" id="s1-blank">______</span>`);
+                document.getElementById('s1-prompt').innerHTML = data.prompt.replace("___", `<span class="border-b-2 border-dashed border-blue-500 text-blue-500 px-4 py-1 font-extrabold animate-fade-in" id="s1-blank">______</span>`);
                 document.getElementById('s1-translation').innerText = data.translation;
                 document.getElementById('s1-input').value = '';
                 document.getElementById('s1-input').focus();
